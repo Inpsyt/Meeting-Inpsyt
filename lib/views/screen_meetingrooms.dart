@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app3/constants/const_colors.dart';
-import 'package:flutter_app3/views/screen_room.dart';
-import 'package:flutter_app3/views/widgets/widget_buttons.dart';
+import 'package:inpsyt_meeting/constants/const_colors.dart';
+import 'package:inpsyt_meeting/views/screen_room.dart';
+import 'package:inpsyt_meeting/views/widgets/widget_buttons.dart';
 import 'package:diamond_notched_fab/diamond_fab_notched_shape.dart';
 import 'package:diamond_notched_fab/diamond_notched_fab.dart';
-import 'package:flutter_app3/models/model_meetingroom.dart';
+import 'package:inpsyt_meeting/models/model_meetingroom.dart';
 
 class ScreenMeetingRooms extends StatefulWidget {
   @override

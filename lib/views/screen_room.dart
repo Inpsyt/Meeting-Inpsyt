@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app3/constants/const_colors.dart';
-import 'package:flutter_app3/views/screen_timeselect.dart';
-import 'package:flutter_app3/views/widgets/widget_buttons.dart';
-import 'package:flutter_app3/models/model_meetingroom.dart';
+import 'package:inpsyt_meeting/constants/const_colors.dart';
+import 'package:inpsyt_meeting/views/screen_timeselect.dart';
+import 'package:inpsyt_meeting/views/widgets/widget_buttons.dart';
+import 'package:inpsyt_meeting/models/model_meetingroom.dart';
 
 class ScreenRoom extends StatefulWidget {
   final ModelMeetingRoom modelMeetingRoom;

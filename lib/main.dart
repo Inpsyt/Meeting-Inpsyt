@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app3/views/screen_meetingrooms.dart';
-import 'package:flutter_app3/constants/const_colors.dart';
+import 'package:inpsyt_meeting/views/screen_meetingrooms.dart';
+import 'package:inpsyt_meeting/constants/const_colors.dart';
 
 void main() => runApp(MyApp());
 

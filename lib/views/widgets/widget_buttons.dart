@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app3/constants/const_colors.dart';
+import 'package:inpsyt_meeting/constants/const_colors.dart';
 
 class DiamondBorder extends ShapeBorder {
   const DiamondBorder();

@@ -1,4 +1,4 @@
-# flutter_app3
+# inpsyt_meeting
 
 A new Flutter application.
 

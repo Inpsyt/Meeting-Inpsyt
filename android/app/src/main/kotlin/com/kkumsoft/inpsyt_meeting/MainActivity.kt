@@ -1,4 +1,4 @@
-package com.example.flutter_app3
+package com.kkumsoft.inpsyt_meeting
 
 import io.flutter.embedding.android.FlutterActivity
 
