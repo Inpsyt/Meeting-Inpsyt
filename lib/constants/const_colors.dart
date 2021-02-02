@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 //tone
 final Color color_white = Colors.white;
 final Color color_dark = Color(0xDD000000);
+final Color color_lightBlue = Color(0xFFEBEFFF);
 final Color color_skyBlue = Color(0xFF5C8BF7);
 final Color color_deepSkyBlue =Color(0xFF4558F5);
 final Color color_yellow = Color(0xFFFFFF00);
