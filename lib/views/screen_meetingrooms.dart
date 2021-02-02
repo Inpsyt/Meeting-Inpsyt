@@ -62,7 +62,9 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
             decoration: BoxDecoration(
               boxShadow: [
                 BoxShadow(
-                    color: color_deepShadowGrey, blurRadius: 5, offset: Offset(0.1, 0.9))
+                    color: color_deepShadowGrey,
+                    blurRadius: 5,
+                    offset: Offset(0.1, 0.9))
               ],
               color: color_skyBlue,
             ),
@@ -71,7 +73,10 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
                 Positioned(
                   child: Text(
                     '이 자리에서\n회의실을 예약하세요',
-                    style: TextStyle(color: color_white, fontSize: 25,fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                        color: color_white,
+                        fontSize: 25,
+                        fontWeight: FontWeight.bold),
                   ),
                   bottom: 20,
                   left: 15,
@@ -80,9 +85,12 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
             ),
           ),
           StreamBuilder<QuerySnapshot>(
-            stream: Firestore.instance.collection('rooms').snapshots(),
-            builder: (context,snapshot){
-              if(!snapshot.hasData){
+            stream: Firestore.instance
+                .collection('rooms')
+                .orderBy('roomNum')
+                .snapshots(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
                 return CircularProgressIndicator();
               }
               final documents = snapshot.data.documents;
@@ -90,7 +98,6 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
                 child: ListView.builder(
                     itemCount: documents.length,
                     itemBuilder: (context, index) {
-
                       final doc = documents[index];
 
                       return _MeetingRoomItem(doc);
@@ -105,12 +112,16 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
 
   //회의실 아이템
   Widget _MeetingRoomItem(DocumentSnapshot doc) {
-
-    ModelMeetingRoom room = ModelMeetingRoom(roomNum: doc['roomNum'],roomName: doc['roomName'],isUsing: doc['isUsing'],time: doc['time'],userNum: doc['userNum']);
+    ModelMeetingRoom room = ModelMeetingRoom(
+        roomNum: doc['roomNum'],
+        roomName: doc['roomName'],
+        isUsing: doc['isUsing'],
+        time: doc['time'],
+        userNum: doc['userNum']);
 
     // ignore: deprecated_member_use
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 20,vertical: 10),
+      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       child: RaisedButton(
         elevation: 3,
         onPressed: () {
@@ -120,25 +131,28 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
             ),
           );
         },
-          color: Colors.white,
-        shape:RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8.0),
-
-      ),
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 10,vertical: 29),
-        child: Row(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
-          children: [
-            Text(room.roomName,style: TextStyle(fontSize: 21 ),),
-            Text(room.time,style: TextStyle(fontSize:16),)
-
-          ],
+        color: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8.0),
         ),
-      ),),
-
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 29),
+          child: Row(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                room.roomName,
+                style: TextStyle(fontSize: 21),
+              ),
+              Text(
+                room.isUsing?room.time+'부터 사용가능':'현재 사용가능',
+                style: TextStyle(fontSize: 16),
+              )
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
