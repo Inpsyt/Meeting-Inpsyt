@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app3/constants/const_colors.dart';
+import 'package:flutter_app3/views/screen_room.dart';
 import 'package:flutter_app3/views/widgets/widget_buttons.dart';
 import 'package:diamond_notched_fab/diamond_fab_notched_shape.dart';
 import 'package:diamond_notched_fab/diamond_notched_fab.dart';
@@ -56,11 +57,11 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
         children: [
           Container(
             //상단부 영역
-            height: 150,
+            height: 130,
             decoration: BoxDecoration(
               boxShadow: [
                 BoxShadow(
-                    color: Colors.grey, blurRadius: 8, offset: Offset(0.1, 0.9))
+                    color: color_deepShadowGrey, blurRadius: 5, offset: Offset(0.1, 0.9))
               ],
               color: color_skyBlue,
             ),
@@ -89,13 +90,20 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
     );
   }
 
+  //회의실 아이템
   Widget _MeetingRoomItem(ModelMeetingRoom modelMeetingRoom) {
     // ignore: deprecated_member_use
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 20,vertical: 10),
       child: RaisedButton(
         elevation: 3,
-        onPressed: () {},
+        onPressed: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (BuildContext context) => new ScreenRoom(modelMeetingRoom),
+            ),
+          );
+        },
           color: Colors.white,
         shape:RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8.0),

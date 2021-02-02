@@ -43,11 +43,12 @@ class GradientButton extends StatefulWidget {
   final Widget child;
   final Color gradientStart;
   final Color gradientEnd ;
+  final Function onPressed;
 
-  GradientButton(this.child,this.gradientStart,this.gradientEnd,this.height,this.width,this.padding);
+  GradientButton(this.child,this.gradientStart,this.gradientEnd,this.height,this.width,this.padding,this.onPressed);
 
   @override
-  _GradientButtonState createState() => _GradientButtonState( this.child,this.gradientStart,this.gradientEnd,this.height,width,this.padding);
+  _GradientButtonState createState() => _GradientButtonState( this.child,this.gradientStart,this.gradientEnd,this.height,width,this.padding,this.onPressed);
 }
 
 class _GradientButtonState extends State<GradientButton> {
@@ -58,14 +59,15 @@ class _GradientButtonState extends State<GradientButton> {
   final Widget child;
   final Color gradientStart;
   final Color gradientEnd ;
+  final Function onPressed;
 
-  _GradientButtonState(this.child,this.gradientStart,this.gradientEnd,this.height,this.width,this.padding);
+  _GradientButtonState(this.child,this.gradientStart,this.gradientEnd,this.height,this.width,this.padding,this.onPressed);
 
   @override
   Widget build(BuildContext context) {
     return Container(
       child: RaisedButton(
-        onPressed: () {},
+        onPressed: this.onPressed,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
         padding: EdgeInsets.all(0.0),
         child: Ink(
