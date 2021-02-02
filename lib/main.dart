@@ -8,8 +8,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+
       home: ScreenMeetingRooms(),
-      theme: ThemeData(accentColor: color_skyBlue,),
+      theme: ThemeData(accentColor: color_skyBlue,fontFamily: 'NanumSquare'),
     );
   }
 }
