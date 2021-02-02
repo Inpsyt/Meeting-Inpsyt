@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:inpsyt_meeting/constants/const_colors.dart';
 import 'package:inpsyt_meeting/views/screen_room.dart';
@@ -78,12 +79,24 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
               ],
             ),
           ),
-          Expanded(
-            child: ListView.builder(
-                itemCount: roomList.length,
-                itemBuilder: (context, index) {
-                  return _MeetingRoomItem(roomList[index]);
-                }),
+          StreamBuilder<QuerySnapshot>(
+            stream: Firestore.instance.collection('rooms').snapshots(),
+            builder: (context,snapshot){
+              if(!snapshot.hasData){
+                return CircularProgressIndicator();
+              }
+              final documents = snapshot.data.documents;
+              return Expanded(
+                child: ListView.builder(
+                    itemCount: documents.length,
+                    itemBuilder: (context, index) {
+
+                      final doc = documents[index];
+
+                      return _MeetingRoomItem(doc);
+                    }),
+              );
+            },
           )
         ],
       ),
@@ -91,7 +104,10 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
   }
 
   //회의실 아이템
-  Widget _MeetingRoomItem(ModelMeetingRoom modelMeetingRoom) {
+  Widget _MeetingRoomItem(DocumentSnapshot doc) {
+
+    ModelMeetingRoom room = ModelMeetingRoom(roomNum: doc['roomNum'],roomName: doc['roomName'],isUsing: doc['isUsing'],time: doc['time'],userNum: doc['userNum']);
+
     // ignore: deprecated_member_use
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 20,vertical: 10),
@@ -100,7 +116,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
         onPressed: () {
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (BuildContext context) => new ScreenRoom(modelMeetingRoom),
+              builder: (BuildContext context) => new ScreenRoom(room),
             ),
           );
         },
@@ -116,8 +132,8 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
           children: [
-            Text(modelMeetingRoom.roomName,style: TextStyle(fontSize: 21 ),),
-            Text(modelMeetingRoom.time,style: TextStyle(fontSize:16),)
+            Text(room.roomName,style: TextStyle(fontSize: 21 ),),
+            Text(room.time,style: TextStyle(fontSize:16),)
 
           ],
         ),

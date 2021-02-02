@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "895772697814",
+    "project_id": "inpsyt-meeting",
+    "storage_bucket": "inpsyt-meeting.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:895772697814:android:eb91f2c0c770f7f2d65577",
+        "android_client_info": {
+          "package_name": "com.kkumsoft.inpsyt_meeting"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "895772697814-qjq28kvkl1m51mculs29u5n9kve79rab.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD2ciFjs2CLW2x28mR7nwsgz5d-hoSm0Pk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "895772697814-qjq28kvkl1m51mculs29u5n9kve79rab.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
