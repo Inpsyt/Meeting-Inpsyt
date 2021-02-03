@@ -168,6 +168,9 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
                       fontSize: 25,
                       fontWeight: FontWeight.bold),
                 ),
+
+                Container(child: Image.asset('assets/images/anime.gif'),height: 100,),
+
                 GradientButton(
                     Column(
                       children: [

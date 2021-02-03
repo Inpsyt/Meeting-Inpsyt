@@ -250,6 +250,10 @@ class _ScreenResultState extends State<ScreenResult> {
   _navigateStopWatch() async{
     await Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => new ScreenStopWatch(newRoom.roomNum)));
 
+    // final result = await Navigator.push(context,
+    //   PageRouteBuilder(pageBuilder: (context,b,c)=>ScreenStopWatch(newRoom.roomNum),transitionDuration: Duration(seconds: 0)),
+    // );
+
     Navigator.pop(context);
   }
 

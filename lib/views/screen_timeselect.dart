@@ -176,10 +176,18 @@ class _ScreenTimeSelectState extends State<ScreenTimeSelect> {
 
 
   _navigateResultScreen(ModelMeetingRoom room, int resultMode) async {
+
+    /*
     final result = await Navigator.push(
         context,
         MaterialPageRoute(
             builder: (BuildContext context) => ScreenResult(room, resultMode)));
+
+     */
+    final result = await Navigator.push(context,
+      PageRouteBuilder(pageBuilder: (context,b,c)=>ScreenResult(room,resultMode),transitionDuration: Duration(seconds: 0)),
+    );
+
     Navigator.pop(context, 'selected');
 
   }

@@ -130,12 +130,15 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
 
 
           if(room.isUsing) {
+
             Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (BuildContext context) =>
                 new ScreenStopWatch(room.roomNum),
               ),
             );
+
+
           }else {
             Navigator.of(context).push(
               MaterialPageRoute(
