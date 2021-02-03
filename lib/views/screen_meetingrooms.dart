@@ -125,11 +125,14 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
       child: RaisedButton(
         elevation: 3,
         onPressed: () {
+
           Navigator.of(context).push(
             MaterialPageRoute(
               builder: (BuildContext context) => new ScreenRoom(room),
             ),
           );
+
+
         },
         color: Colors.white,
         shape: RoundedRectangleBorder(

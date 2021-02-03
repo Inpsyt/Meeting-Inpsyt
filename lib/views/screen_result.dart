@@ -1,31 +1,35 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:inpsyt_meeting/constants/const_colors.dart';
 import 'package:inpsyt_meeting/models/model_meetingroom.dart';
-import 'package:inpsyt_meeting/views/screen_result.dart';
-import 'package:inpsyt_meeting/views/widgets/widget_buttons.dart';
-import 'package:intl/intl.dart';
-import 'package:ntp/ntp.dart';
 
-class ScreenTimeSelect extends StatefulWidget {
+class ScreenResult extends StatefulWidget {
+
+
   final ModelMeetingRoom modelMeetingRoom;
+  final int resultMode;
+  //0일때는 체크인 완료표시
+  //1일때는 체크아운 완료표시
+  //2일때는 체크인 예약표시
 
-  ScreenTimeSelect(this.modelMeetingRoom);
+
+  ScreenResult(this.modelMeetingRoom,this.resultMode);
 
   @override
-  _ScreenTimeSelectState createState() =>
-      _ScreenTimeSelectState(this.modelMeetingRoom);
+  _ScreenResultState createState() => _ScreenResultState(modelMeetingRoom,resultMode);
 }
 
-class _ScreenTimeSelectState extends State<ScreenTimeSelect> {
-  final ModelMeetingRoom modelMeetingRoom;
+class _ScreenResultState extends State<ScreenResult> {
 
-  _ScreenTimeSelectState(this.modelMeetingRoom);
+  final ModelMeetingRoom modelMeetingRoom;
+  final int resultMode;
+
+  _ScreenResultState(this.modelMeetingRoom,this.resultMode);
 
   @override
   Widget build(BuildContext context) {
-    final double deviceWidth = MediaQuery.of(context).size.width;
+
     final double deviceHeight = MediaQuery.of(context).size.height;
+    final double deviceWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
       // floatingActionButton: DiamondNotchedFab(
@@ -112,98 +116,87 @@ class _ScreenTimeSelectState extends State<ScreenTimeSelect> {
                     blurRadius: 9),
               ],
             ),
+
+            //컨테이너 내부 영역
             child: Column(
               mainAxisSize: MainAxisSize.max,
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 Text(
-                  '이용시간을 선택하세요!',
+                  _getTextResult(resultMode),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                       color: color_dark,
                       fontSize: 25,
                       fontWeight: FontWeight.bold),
                 ),
-                _timeButton('30분'),
-                _timeButton('60분'),
-                _timeButton('90분'),
-                _timeButton('120분'),
-                _timeButton('하루종일'),
+
+                Text(
+                  '16:50',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      color: color_dark,
+                      fontSize: 90  ,
+                      fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  _getTextResult2(resultMode),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      color: color_dark,
+                      fontSize: 25,
+                      fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  '10초 후 자동 종료됩니다',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      color: color_dark,
+                      fontSize: 20,
+                      fontWeight: FontWeight.normal),
+                ),
+
+
               ],
             ),
           ),
 
           Expanded(
               child: Container(
-            child: Center(
-                child: Text(
-              '현재시각 2021.02.01 14:20',
-              style: TextStyle(color: color_deepShadowGrey, fontSize: 19),
-            )),
-          ))
+                child: Center(
+                    child: Text(
+                      '현재시각 2021.02.01 14:20',
+                      style: TextStyle(color: color_deepShadowGrey, fontSize: 19),
+                    )),
+              ))
         ],
       ),
     );
-  }
 
-  Widget _timeButton(String text) {
-
-    final String selectedTime = text.replaceAll('분', '');
-
-    return ButtonTheme(
-      minWidth: 200,
-      child: RaisedButton(
-        onPressed: () {
-
-
-          _documentUsingSet(modelMeetingRoom, _addConvertedTime(selectedTime) );
-          _navigateResultScreen(modelMeetingRoom, 0);
-        },
-        color: color_lightBlue,
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(7),
-            side: BorderSide(color: color_deepShadowGrey)),
-        child: Padding(
-            padding: EdgeInsets.symmetric(vertical: 10),
-            child: Text(
-              text,
-              style: TextStyle(fontSize: 18),
-            )),
-      ),
-    );
-  }
-
-
-  _navigateResultScreen(ModelMeetingRoom room, int resultMode) async {
-    final result = await Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (BuildContext context) => ScreenResult(room, resultMode)));
-    Navigator.pop(context, 'selected');
 
   }
 
 
-  String _addConvertedTime(String increaseTime) {
-    DateTime time = DateTime.now();
+  String _getTextResult(int resultMode){
 
-    if(increaseTime.trim() == '하루종일'){
-      time = new DateTime(time.year,time.month,time.day,21,0,0,0,0);
-      return DateFormat('yyyy-MM-dd \n HH:mm').format(time);
+    switch(resultMode){
+      case 0: return '체크인 되었습니다!';
+      case 1: return '체크아웃 되었습니다!';
+      case 2: return '체크인 예약되었습니다!';
     }
-
-    time = time.add(Duration(minutes: int.parse(increaseTime)));
-    return DateFormat('yyyy-MM-dd \n HH:mm').format(time);
-
-  }
-  
-  _documentUsingSet(ModelMeetingRoom room, String timeSet){ //room은 정보제공용, 그 우측으로는 모두 수정할 사항들 기입
-    Firestore.instance.collection('rooms').document(room.roomNum.toString()).updateData({'isUsing':true});
-    Firestore.instance.collection('rooms').document(room.roomNum.toString()).updateData({'time':timeSet});
-    Firestore.instance.collection('rooms').document(room.roomNum.toString()).updateData({'userNum':'1234'}); //번호획득 로직 구현 필요
-    
   }
 
+  String _getTimeResult(int resultMode){ //여기서 데이터베이스에서 데이터를 가져올때 모드에따라서 다른값을 가져올수도 있음
+    switch(resultMode){
 
+    }
+  }
+
+  String _getTextResult2(int resultMode){
+    switch(resultMode){
+      case 0: return '까지 이용할 수 있습니다';
+      case 1: return '이용하셨습니다';
+      case 2: return '까지 이용할 수 있습니다';
+    }
+  }
 }

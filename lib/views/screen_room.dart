@@ -142,10 +142,7 @@ class _ScreenRoomState extends State<ScreenRoom> {
                     deviceWidth/1.3,
                     10,(){
 
-
-                  Navigator.of(context).push(
-                    MaterialPageRoute(builder: (BuildContext context) => ScreenTimeSelect(modelMeetingRoom))
-                  );
+                      _navigateTimeSelect(context, modelMeetingRoom);
 
                 }),
                 GradientButton(
@@ -179,6 +176,19 @@ class _ScreenRoomState extends State<ScreenRoom> {
         ],
       ),
     );
-    ;
+
   }
+
+  _navigateTimeSelect(BuildContext context, ModelMeetingRoom roomModel) async{
+
+    final result = await Navigator.of(context).push(
+        MaterialPageRoute(builder: (BuildContext context) => ScreenTimeSelect(modelMeetingRoom))
+    );
+
+    if(result == 'selected'){
+      Navigator.pop(context);
+    }
+
+  }
+
 }
