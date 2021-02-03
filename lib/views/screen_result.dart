@@ -19,7 +19,7 @@ class ScreenResult extends StatefulWidget {
 
 class _ScreenResultState extends State<ScreenResult> {
   final ModelMeetingRoom modelMeetingRoom;
-  ModelMeetingRoom newRoom;
+
   final int resultMode;
 
   _ScreenResultState(this.modelMeetingRoom, this.resultMode);
@@ -146,62 +146,66 @@ class _ScreenResultState extends State<ScreenResult> {
             ),
 
             //컨테이너 내부 영역
-            child: newRoom == null //newRoom 모델에 데이터를 불러오지 못하고 있다면 대신 불러오는중.. 표시
-                ? Center(
-                    child: Text(
-                      '불러오는중..',
-                      style:
-                          TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
+            child: StreamBuilder(
+              stream: Firestore.instance.collection('rooms').document(modelMeetingRoom.roomNum.toString()).snapshots(),
+              builder: (context,snapshot){
+                if(!snapshot.hasData){
+                  return CircularProgressIndicator();
+                }
+                
+                final data = snapshot.data;
+                return Column(
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Text(
+                      _getTextResult(resultMode),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          color: color_dark,
+                          fontSize: 25,
+                          fontWeight: FontWeight.bold),
                     ),
-                  )
-                : Column(
-                    mainAxisSize: MainAxisSize.max,
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Text(
-                        _getTextResult(resultMode),
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            color: color_dark,
-                            fontSize: 25,
-                            fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        _getTimeResult(resultMode),
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            color: color_dark,
-                            fontSize: 90,
-                            fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        _getTextResult2(resultMode),
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            color: color_dark,
-                            fontSize: 25,
-                            fontWeight: FontWeight.bold),
-                      ),
-                      
-                      RaisedButton(onPressed: (){
+                    Text(
+                      _getTimeResult(resultMode,data['time']),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          color: color_dark,
+                          fontSize: 90,
+                          fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      _getTextResult2(resultMode),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          color: color_dark,
+                          fontSize: 25,
+                          fontWeight: FontWeight.bold),
+                    ),
+
+                    RaisedButton(onPressed: (){
 
 
-                        _navigateStopWatch();
+                      _navigateStopWatch();
 
 
 
-                      },child: Text('확인'),)
-                      // 타이머 적용하며 카운트다운은 코딩시간이 오래걸리니 확인버튼만 등재하기
-                      // Text(
-                      //   '10초 후 자동 종료됩니다',
-                      //   textAlign: TextAlign.center,
-                      //   style: TextStyle(
-                      //       color: color_dark,
-                      //       fontSize: 20,
-                      //       fontWeight: FontWeight.normal),
-                      // ),
-                    ],
-                  ),
+                    },child: Text('확인'),)
+                    // 타이머 적용하며 카운트다운은 코딩시간이 오래걸리니 확인버튼만 등재하기
+                    // Text(
+                    //   '10초 후 자동 종료됩니다',
+                    //   textAlign: TextAlign.center,
+                    //   style: TextStyle(
+                    //       color: color_dark,
+                    //       fontSize: 20,
+                    //       fontWeight: FontWeight.normal),
+                    // ),
+                  ],
+                );
+                
+              },
+              
+            ),
           ),
 
           Expanded(
@@ -228,23 +232,23 @@ class _ScreenResultState extends State<ScreenResult> {
     }
   }
 
-  String _getTimeResult(int resultMode) {
+  String _getTimeResult(int resultMode,String time) {
     //여기서 데이터베이스에서 데이터를 가져올때 모드에따라서 다른값을 가져올수도 있음
     switch (resultMode) {
       case 0:
 
-          return newRoom.time=='none'?'0':newRoom.time.substring(10, newRoom.time.length).trim();
+          return time=='none'?'0':time.substring(10, time.length).trim();
 
    //   return newRoom.time;
 
         break;
 
       case 1:
-        return modelMeetingRoom.time.substring(0, 10).trim();
+        return time.substring(0, 10).trim();
         break;
 
       case 2:
-        return modelMeetingRoom.time.substring(0, 10).trim();
+        return time.substring(0, 10).trim();
         break;
     }
   }
@@ -261,7 +265,7 @@ class _ScreenResultState extends State<ScreenResult> {
   }
 
   _navigateStopWatch() async{
-    await Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => new ScreenStopWatch(newRoom.roomNum)));
+    await Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => new ScreenStopWatch(modelMeetingRoom.roomNum)));
 
     // final result = await Navigator.push(context,
     //   PageRouteBuilder(pageBuilder: (context,b,c)=>ScreenStopWatch(newRoom.roomNum),transitionDuration: Duration(seconds: 0)),

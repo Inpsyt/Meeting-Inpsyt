@@ -44,6 +44,8 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
 
 
 
+
+
   _checkTimeOver() async{ //자동 나가기
 
     int leftTime = endTime.difference(currentTime).inMinutes;
