@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -18,14 +19,17 @@ class ScreenStopWatch extends StatefulWidget {
 }
 
 class _ScreenStopWatchState extends State<ScreenStopWatch> {
+
+
+
   final roomNum;
   _ScreenStopWatchState(this.roomNum);
-  DateTime endTime;
+ // DateTime endTime;
   DateTime currentTime;
 
   ModelMeetingRoom newRoom; //지금 현재 데이터베이스에 있는 방정보
 
-  int overCount=0;
+  int leftTime = 10;
 
 /*
   _getDocument(int roomNum) async {
@@ -45,26 +49,40 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
 
 
 
-
+ */
 
   _checkTimeOver() async{ //자동 나가기
 
-    int leftTime = endTime.difference(currentTime).inMinutes;
+
     //await sleep(Duration(seconds: 1));
-    if(leftTime <= 0 && overCount <3){
+    if(leftTime <= 0){
 
-      overCount++;
+      Vibration.vibrate(duration: 1000);
       print('시작 경과'+leftTime.toString());
-
-      sleep(Duration(seconds: 1));
 
       _checkOutAndPop();
 
     }
 
   }
-*/
 
+
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+
+     Timer.periodic(Duration(seconds: 3), (Timer t) {
+      setState(() {
+
+        if(leftTime <=0){
+          t.cancel();
+        }
+
+      });
+    });
+  }
 
 
   @override
@@ -73,9 +91,10 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
     double deviceHeight = MediaQuery.of(context).size.height;
     double deviceWidth = MediaQuery.of(context).size.width;
 
-    Vibration.vibrate(duration: 100);
+   // Vibration.vibrate(duration: 200);
     print('stopwatch');
 
+    _checkTimeOver();
   //  _getDocument(roomNum);
 
 
@@ -185,6 +204,9 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
                 }
 
                 final document = snapshot.data;
+
+
+                leftTime =DateTime.parse(document['time']).difference(DateTime.now()).inMinutes;
                 return
                   Column(
                     mainAxisSize: MainAxisSize.max,
@@ -201,7 +223,7 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
 
                       Text(
                        // newRoom==null?'불러오는 중':endTime.difference(currentTime).inMinutes.toString()+'분',
-                        DateTime.parse(document['time']).difference(DateTime.now()).inMinutes.toString() + '분',
+                        leftTime.toString() + '분',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                             color: color_dark,
