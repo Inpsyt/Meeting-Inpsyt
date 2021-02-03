@@ -207,6 +207,8 @@ class _ScreenTimeSelectState extends State<ScreenTimeSelect> {
     return DateFormat('yyyy-MM-dd HH:mm').format(time);
 
   }
+
+
   
   _documentUsingSet(ModelMeetingRoom room, String timeSet){ //room은 정보제공용, 그 우측으로는 모두 수정할 사항들 기입
     Firestore.instance.collection('rooms').document(room.roomNum.toString()).updateData({'isUsing':true});
