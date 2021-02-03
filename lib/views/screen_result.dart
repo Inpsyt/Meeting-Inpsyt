@@ -24,27 +24,40 @@ class _ScreenResultState extends State<ScreenResult> {
 
   _ScreenResultState(this.modelMeetingRoom, this.resultMode);
 
+  /*
   getDocument(ModelMeetingRoom room) async {
     //파이어스토어로부터 지정된 문서를 받아옴
     DocumentSnapshot doc = await Firestore.instance
         .collection('rooms')
         .document(room.roomNum.toString())
         .get();
-    newRoom = new ModelMeetingRoom(
+    newRoom = await new ModelMeetingRoom(
         roomNum: doc.data['roomNum'],
         roomName: doc.data['roomName'],
         time: doc.data['time'],
         isUsing: doc.data['isUsing'],
         userNum: doc.data['userNum']);
-    setState(() {});
+
+    print(newRoom.roomName);
+
+    if(newRoom.roomNum == null){
+      setState(() {
+
+      });
+    }
+
   }
 
+
+   */
   @override
   Widget build(BuildContext context) {
     final double deviceHeight = MediaQuery.of(context).size.height;
     final double deviceWidth = MediaQuery.of(context).size.width;
 
-    getDocument(modelMeetingRoom); //지정된 문서 받아오기 실행
+    print('result');
+
+   // getDocument(modelMeetingRoom); //지정된 문서 받아오기 실행
 
     return Scaffold(
       // floatingActionButton: DiamondNotchedFab(
@@ -138,7 +151,7 @@ class _ScreenResultState extends State<ScreenResult> {
                     child: Text(
                       '불러오는중..',
                       style:
-                          TextStyle(fontSize: 60, fontWeight: FontWeight.bold),
+                          TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
                     ),
                   )
                 : Column(

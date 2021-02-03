@@ -18,6 +18,9 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
 
   @override
   Widget build(BuildContext context) {
+
+    print('list');
+
     roomList = <ModelMeetingRoom>[];
     roomList.add(ModelMeetingRoom(
         roomNum: 1,

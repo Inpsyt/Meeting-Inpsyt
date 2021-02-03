@@ -5,9 +5,10 @@ import 'package:inpsyt_meeting/constants/const_colors.dart';
 void main() {
   ErrorWidget.builder = (FlutterErrorDetails details) {
     return Container(
-      color: Colors.green,
+      color: Colors.white,
       child: Text(
-        details.toString(),
+        //details.toString(),
+        '',
         style: TextStyle(
           fontSize: 15.0,
           color: Colors.white,

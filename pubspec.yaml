@@ -27,6 +27,7 @@ dependencies:
   cloud_firestore: ^0.12.11
   intl: ^0.16.0
   ntp: ^1.0.7
+  vibration: ^1.7.3
 
   diamond_notched_fab: ^0.0.1
   # The following adds the Cupertino Icons font to your application.
@@ -36,6 +37,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

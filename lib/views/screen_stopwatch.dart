@@ -1,8 +1,11 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:inpsyt_meeting/constants/const_colors.dart';
 import 'package:inpsyt_meeting/models/model_meetingroom.dart';
 import 'package:inpsyt_meeting/views/widgets/widget_buttons.dart';
+import 'package:vibration/vibration.dart';
 
 class ScreenStopWatch extends StatefulWidget {
 
@@ -19,8 +22,12 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
   DateTime endTime;
   DateTime currentTime;
 
+  ModelMeetingRoom newRoom; //지금 현재 데이터베이스에 있는 방정보
 
-  getDocument(int roomNum) async {
+  int overCount=0;
+
+
+  _getDocument(int roomNum) async {
     //파이어스토어로부터 지정된 문서를 받아옴
     DocumentSnapshot doc = await Firestore.instance
         .collection('rooms')
@@ -35,7 +42,26 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
     setState(() {});
   }
 
-  ModelMeetingRoom newRoom;
+
+
+  _checkTimeOver() async{ //자동 나가기
+
+    int leftTime = endTime.difference(currentTime).inMinutes;
+    //await sleep(Duration(seconds: 1));
+    if(leftTime <= 0 && overCount <3){
+
+      overCount++;
+      print('시작 경과'+leftTime.toString());
+
+      sleep(Duration(seconds: 1));
+
+      _checkOutAndPop();
+
+    }
+
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -43,11 +69,16 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
     double deviceHeight = MediaQuery.of(context).size.height;
     double deviceWidth = MediaQuery.of(context).size.width;
 
-    getDocument(roomNum);
+    Vibration.vibrate(duration: 100);
+    print('stopwatch');
 
-    endTime = DateTime.parse(newRoom==null?'2000-01-01 00:00':newRoom.time.trim());
+    _getDocument(roomNum);
+
+    endTime = DateTime.parse(newRoom==null?'2222-01-01 00:00':newRoom.time.trim());
 
     currentTime = DateTime.now();
+
+    _checkTimeOver();
 
 
 
@@ -210,8 +241,9 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
   _checkOutAndPop() {
 
 
+    Navigator.pop(context);
     newRoom = null;
     Firestore.instance.collection('rooms').document(roomNum.toString()).updateData({'time':'none','isUsing':false,'userNum':'none'});
-    Navigator.pop(context);
+
   }
 }

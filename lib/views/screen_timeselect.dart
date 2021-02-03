@@ -27,6 +27,8 @@ class _ScreenTimeSelectState extends State<ScreenTimeSelect> {
     final double deviceWidth = MediaQuery.of(context).size.width;
     final double deviceHeight = MediaQuery.of(context).size.height;
 
+
+    print('timeselect');
     return Scaffold(
       // floatingActionButton: DiamondNotchedFab(
       //   onPressed: () {},
@@ -124,7 +126,7 @@ class _ScreenTimeSelectState extends State<ScreenTimeSelect> {
                       fontSize: 25,
                       fontWeight: FontWeight.bold),
                 ),
-                _timeButton('30분'),
+                _timeButton('2분'),
                 _timeButton('60분'),
                 _timeButton('90분'),
                 _timeButton('120분'),
