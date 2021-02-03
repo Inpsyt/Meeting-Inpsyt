@@ -1,35 +1,50 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:inpsyt_meeting/constants/const_colors.dart';
 import 'package:inpsyt_meeting/models/model_meetingroom.dart';
+import 'package:inpsyt_meeting/views/screen_stopwatch.dart';
 
 class ScreenResult extends StatefulWidget {
-
-
   final ModelMeetingRoom modelMeetingRoom;
   final int resultMode;
-  //0일때는 체크인 완료표시
-  //1일때는 체크아운 완료표시
-  //2일때는 체크인 예약표시
 
 
-  ScreenResult(this.modelMeetingRoom,this.resultMode);
+
+  ScreenResult(this.modelMeetingRoom, this.resultMode);
 
   @override
-  _ScreenResultState createState() => _ScreenResultState(modelMeetingRoom,resultMode);
+  _ScreenResultState createState() =>
+      _ScreenResultState(modelMeetingRoom, resultMode);
 }
 
 class _ScreenResultState extends State<ScreenResult> {
-
   final ModelMeetingRoom modelMeetingRoom;
+  ModelMeetingRoom newRoom;
   final int resultMode;
 
-  _ScreenResultState(this.modelMeetingRoom,this.resultMode);
+  _ScreenResultState(this.modelMeetingRoom, this.resultMode);
+
+  getDocument(ModelMeetingRoom room) async {
+    //파이어스토어로부터 지정된 문서를 받아옴
+    DocumentSnapshot doc = await Firestore.instance
+        .collection('rooms')
+        .document(room.roomNum.toString())
+        .get();
+    newRoom = new ModelMeetingRoom(
+        roomNum: doc.data['roomNum'],
+        roomName: doc.data['roomName'],
+        time: doc.data['time'],
+        isUsing: doc.data['isUsing'],
+        userNum: doc.data['userNum']);
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
-
     final double deviceHeight = MediaQuery.of(context).size.height;
     final double deviceWidth = MediaQuery.of(context).size.width;
+
+    getDocument(modelMeetingRoom); //지정된 문서 받아오기 실행
 
     return Scaffold(
       // floatingActionButton: DiamondNotchedFab(
@@ -66,10 +81,10 @@ class _ScreenResultState extends State<ScreenResult> {
                     IconButton(
                         icon: Icon(
                           Icons.arrow_back_ios,
-                          color: color_white,
+                          color: Colors.transparent,
                         ),
                         onPressed: () {
-                          Navigator.pop(context);
+
                         }),
                     Text(
                       'Meeting Room',
@@ -118,85 +133,125 @@ class _ScreenResultState extends State<ScreenResult> {
             ),
 
             //컨테이너 내부 영역
-            child: Column(
-              mainAxisSize: MainAxisSize.max,
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Text(
-                  _getTextResult(resultMode),
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                      color: color_dark,
-                      fontSize: 25,
-                      fontWeight: FontWeight.bold),
-                ),
+            child: newRoom == null //newRoom 모델에 데이터를 불러오지 못하고 있다면 대신 불러오는중.. 표시
+                ? Center(
+                    child: Text(
+                      '불러오는중..',
+                      style:
+                          TextStyle(fontSize: 60, fontWeight: FontWeight.bold),
+                    ),
+                  )
+                : Column(
+                    mainAxisSize: MainAxisSize.max,
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Text(
+                        _getTextResult(resultMode),
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            color: color_dark,
+                            fontSize: 25,
+                            fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        _getTimeResult(resultMode),
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            color: color_dark,
+                            fontSize: 90,
+                            fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        _getTextResult2(resultMode),
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            color: color_dark,
+                            fontSize: 25,
+                            fontWeight: FontWeight.bold),
+                      ),
+                      
+                      RaisedButton(onPressed: (){
 
-                Text(
-                  '16:50',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                      color: color_dark,
-                      fontSize: 90  ,
-                      fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  _getTextResult2(resultMode),
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                      color: color_dark,
-                      fontSize: 25,
-                      fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  '10초 후 자동 종료됩니다',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                      color: color_dark,
-                      fontSize: 20,
-                      fontWeight: FontWeight.normal),
-                ),
+
+                        _navigateStopWatch();
 
 
-              ],
-            ),
+
+                      },child: Text('확인'),)
+                      // 타이머 적용하며 카운트다운은 코딩시간이 오래걸리니 확인버튼만 등재하기
+                      // Text(
+                      //   '10초 후 자동 종료됩니다',
+                      //   textAlign: TextAlign.center,
+                      //   style: TextStyle(
+                      //       color: color_dark,
+                      //       fontSize: 20,
+                      //       fontWeight: FontWeight.normal),
+                      // ),
+                    ],
+                  ),
           ),
 
           Expanded(
               child: Container(
-                child: Center(
-                    child: Text(
-                      '현재시각 2021.02.01 14:20',
-                      style: TextStyle(color: color_deepShadowGrey, fontSize: 19),
-                    )),
-              ))
+            child: Center(
+                child: Text(
+              '현재시각 2021.02.01 14:20',
+              style: TextStyle(color: color_deepShadowGrey, fontSize: 19),
+            )),
+          ))
         ],
       ),
     );
-
-
   }
 
-
-  String _getTextResult(int resultMode){
-
-    switch(resultMode){
-      case 0: return '체크인 되었습니다!';
-      case 1: return '체크아웃 되었습니다!';
-      case 2: return '체크인 예약되었습니다!';
+  String _getTextResult(int resultMode) {
+    switch (resultMode) {
+      case 0:
+        return '체크인 되었습니다!';
+      case 1:
+        return '체크아웃 되었습니다!';
+      case 2:
+        return '체크인 예약되었습니다!';
     }
   }
 
-  String _getTimeResult(int resultMode){ //여기서 데이터베이스에서 데이터를 가져올때 모드에따라서 다른값을 가져올수도 있음
-    switch(resultMode){
+  String _getTimeResult(int resultMode) {
+    //여기서 데이터베이스에서 데이터를 가져올때 모드에따라서 다른값을 가져올수도 있음
+    switch (resultMode) {
+      case 0:
 
+          return newRoom.time=='none'?'0':newRoom.time.substring(10, newRoom.time.length).trim();
+
+   //   return newRoom.time;
+
+        break;
+
+      case 1:
+        return modelMeetingRoom.time.substring(0, 10).trim();
+        break;
+
+      case 2:
+        return modelMeetingRoom.time.substring(0, 10).trim();
+        break;
     }
   }
 
-  String _getTextResult2(int resultMode){
-    switch(resultMode){
-      case 0: return '까지 이용할 수 있습니다';
-      case 1: return '이용하셨습니다';
-      case 2: return '까지 이용할 수 있습니다';
+  String _getTextResult2(int resultMode) {
+    switch (resultMode) {
+      case 0:
+        return '까지 이용할 수 있습니다';
+      case 1:
+        return '이용하셨습니다';
+      case 2:
+        return '까지 이용할 수 있습니다';
     }
   }
+
+  _navigateStopWatch() async{
+    await Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => new ScreenStopWatch(newRoom.roomNum)));
+
+    Navigator.pop(context);
+  }
+
+
 }

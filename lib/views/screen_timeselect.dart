@@ -190,11 +190,11 @@ class _ScreenTimeSelectState extends State<ScreenTimeSelect> {
 
     if(increaseTime.trim() == '하루종일'){
       time = new DateTime(time.year,time.month,time.day,21,0,0,0,0);
-      return DateFormat('yyyy-MM-dd \n HH:mm').format(time);
+      return DateFormat('yyyy-MM-dd HH:mm').format(time);
     }
 
     time = time.add(Duration(minutes: int.parse(increaseTime)));
-    return DateFormat('yyyy-MM-dd \n HH:mm').format(time);
+    return DateFormat('yyyy-MM-dd HH:mm').format(time);
 
   }
   

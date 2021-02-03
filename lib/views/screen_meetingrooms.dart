@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:inpsyt_meeting/constants/const_colors.dart';
 import 'package:inpsyt_meeting/views/screen_room.dart';
+import 'package:inpsyt_meeting/views/screen_stopwatch.dart';
 import 'package:inpsyt_meeting/views/widgets/widget_buttons.dart';
 import 'package:diamond_notched_fab/diamond_fab_notched_shape.dart';
 import 'package:diamond_notched_fab/diamond_notched_fab.dart';
@@ -126,11 +127,26 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
         elevation: 3,
         onPressed: () {
 
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (BuildContext context) => new ScreenRoom(room),
-            ),
-          );
+
+
+          if(room.isUsing) {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (BuildContext context) =>
+                new ScreenStopWatch(room.roomNum),
+              ),
+            );
+          }else {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (BuildContext context) => new ScreenRoom(room),
+              ),
+            );
+          }
+
+
+
+
 
 
         },
@@ -149,7 +165,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
                 style: TextStyle(fontSize: 21),
               ),
               Text(
-                room.isUsing?room.time+'부터 사용가능':'현재 사용가능',
+                room.isUsing?room.time.substring(10, room.time.length).trim()+'부터 사용가능':'현재 사용가능',
                 style: TextStyle(fontSize: 16),
               )
             ],

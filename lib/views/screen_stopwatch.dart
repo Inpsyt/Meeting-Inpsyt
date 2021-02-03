@@ -1,27 +1,55 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:inpsyt_meeting/constants/const_colors.dart';
-import 'package:inpsyt_meeting/views/screen_timeselect.dart';
-import 'package:inpsyt_meeting/views/widgets/widget_buttons.dart';
 import 'package:inpsyt_meeting/models/model_meetingroom.dart';
+import 'package:inpsyt_meeting/views/widgets/widget_buttons.dart';
 
-class ScreenRoom extends StatefulWidget {
-  final ModelMeetingRoom modelMeetingRoom;
+class ScreenStopWatch extends StatefulWidget {
 
-  ScreenRoom(this.modelMeetingRoom);
+  final int roomNum;
+  ScreenStopWatch(this.roomNum);
 
   @override
-  _ScreenRoomState createState() => _ScreenRoomState(this.modelMeetingRoom);
+  _ScreenStopWatchState createState() => _ScreenStopWatchState(this.roomNum);
 }
 
-class _ScreenRoomState extends State<ScreenRoom> {
-  final ModelMeetingRoom modelMeetingRoom;
+class _ScreenStopWatchState extends State<ScreenStopWatch> {
+  final roomNum;
+  _ScreenStopWatchState(this.roomNum);
+  DateTime endTime;
+  DateTime currentTime;
 
-  _ScreenRoomState(this.modelMeetingRoom);
+
+  getDocument(int roomNum) async {
+    //파이어스토어로부터 지정된 문서를 받아옴
+    DocumentSnapshot doc = await Firestore.instance
+        .collection('rooms')
+        .document(roomNum.toString())
+        .get();
+    newRoom = new ModelMeetingRoom(
+        roomNum: doc.data['roomNum'],
+        roomName: doc.data['roomName'],
+        time: doc.data['time'],
+        isUsing: doc.data['isUsing'],
+        userNum: doc.data['userNum']);
+    setState(() {});
+  }
+
+  ModelMeetingRoom newRoom;
 
   @override
   Widget build(BuildContext context) {
-    double deviceWidth = MediaQuery.of(context).size.width;
+
     double deviceHeight = MediaQuery.of(context).size.height;
+    double deviceWidth = MediaQuery.of(context).size.width;
+
+    getDocument(roomNum);
+
+    endTime = DateTime.parse(newRoom==null?'2000-01-01 00:00':newRoom.time.trim());
+
+    currentTime = DateTime.now();
+
+
 
     return Scaffold(
       // floatingActionButton: DiamondNotchedFab(
@@ -82,7 +110,7 @@ class _ScreenRoomState extends State<ScreenRoom> {
                   ],
                 ),
                 Text(
-                  modelMeetingRoom.roomName,
+                  newRoom==null?'불러오는중..':newRoom.roomName,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                       color: color_yellow,
@@ -116,7 +144,24 @@ class _ScreenRoomState extends State<ScreenRoom> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 Text(
-                  '체크인 하세요!',
+                  '현 회의 잔여시간',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      color: color_dark,
+                      fontSize: 25,
+                      fontWeight: FontWeight.bold),
+                ),
+
+                Text(
+                  newRoom==null?'불러오는 중':endTime.difference(currentTime).inMinutes.toString()+'분',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      color: color_dark,
+                      fontSize: newRoom==null?50:80,
+                      fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  '남았습니다',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                       color: color_dark,
@@ -127,70 +172,43 @@ class _ScreenRoomState extends State<ScreenRoom> {
                     Column(
                       children: [
                         Text(
-                          '체크인',
+                          '체크아웃',
                           style: TextStyle(color: color_white,fontSize: 25,fontWeight: FontWeight.bold),
                         ),
-                        Text(
-                          '회의실 이용을 시작합니다',
-                          style: TextStyle(color: color_white,fontSize: 17),
-                        ),
+
                       ],
                     ),
                     color_gradientBlueStart,
                     color_gradientBlueEnd,
-                    90,
+                    60,
                     deviceWidth/1.3,
                     10,(){
 
-                      _navigateTimeSelect(context, modelMeetingRoom);
+                      _checkOutAndPop();
 
                 }),
 
-                // //더이상 사용안하는 버튼
-                // GradientButton(
-                //     Column(
-                //       children: [
-                //         Text(
-                //           '체크아웃',
-                //           style: TextStyle(color: color_white,fontSize: 25,fontWeight: FontWeight.bold),
-                //         ),
-                //         Text(
-                //           '회의실 이용을 종료합니다',
-                //           style: TextStyle(color: color_white,fontSize: 17),
-                //         ),
-                //       ],
-                //     ),
-                //     color_gradientBlueStart,
-                //     color_gradientBlueEnd,
-                //     90,
-                //     deviceWidth/1.3,
-                //     10,(){
-                //
-                // })
+
               ],
             ),
           ),
 
           Expanded(
               child: Container(
-            child: Center(child: Text('현재시각 2021.02.01 14:20',style: TextStyle(color: color_deepShadowGrey,fontSize: 19),)),
-          ))
+                child: Center(child: Text('현재시각 2021.02.01 14:20',style: TextStyle(color: color_deepShadowGrey,fontSize: 19),)),
+              ))
         ],
       ),
     );
 
-  }
-
-  _navigateTimeSelect(BuildContext context, ModelMeetingRoom roomModel) async{
-
-    final result = await Navigator.push(context,
-        PageRouteBuilder(pageBuilder: pageBuilder)),
-    );
-
-    if(result == 'selected'){
-      Navigator.pop(context);
-    }
 
   }
 
+  _checkOutAndPop() {
+
+
+    newRoom = null;
+    Firestore.instance.collection('rooms').document(roomNum.toString()).updateData({'time':'none','isUsing':false,'userNum':'none'});
+    Navigator.pop(context);
+  }
 }
