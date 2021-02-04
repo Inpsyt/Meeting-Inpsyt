@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:inpsyt_meeting/views/screen_firstAuthen.dart';
 import 'package:inpsyt_meeting/views/screen_meetingrooms.dart';
 import 'package:inpsyt_meeting/constants/const_colors.dart';
 
@@ -26,7 +27,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
 
 
-      home: ScreenMeetingRooms(),
+  //   home: ScreenMeetingRooms(),
+
+      home: ScreenFistAuthen(),
       theme: ThemeData(accentColor: color_skyBlue,fontFamily: 'NanumSquare'),
     );
   }
