@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:inpsyt_meeting/constants/const_colors.dart';
@@ -19,6 +21,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
   List<ModelMeetingRoom> roomList;
   SharedPreferences _preferences;
   String _userNum = '';
+  bool _youAreUsingNow = false;
 
   _getCheckUserNumPref() async {
     _preferences = await SharedPreferences.getInstance();
@@ -49,37 +52,22 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
     super.initState();
 
     _getCheckUserNumPref();
+
+
+
   }
 
   @override
   Widget build(BuildContext context) {
-    roomList = <ModelMeetingRoom>[];
-    roomList.add(ModelMeetingRoom(
-        roomNum: 1,
-        roomName: 'WISC',
-        time: '14:00 예약가능',
-        isUsing: true,
-        userNum: '8521'));
-    roomList.add(ModelMeetingRoom(
-        roomNum: 2,
-        roomName: 'MLST',
-        time: '지금 예약가능',
-        isUsing: false,
-        userNum: '8521'));
 
-    roomList.add(ModelMeetingRoom(
-        roomNum: 3,
-        roomName: 'Holland',
-        time: '지금 예약가능',
-        isUsing: false,
-        userNum: '8521'));
+    Firestore.instance.collection('rooms').where('userNum',isEqualTo: _userNum).getDocuments().then((QuerySnapshot ds){
+      _youAreUsingNow = false;
+      ds.documents.forEach((element) {_youAreUsingNow = true;});
+      setState(() {
 
-    roomList.add(ModelMeetingRoom(
-        roomNum: 4,
-        roomName: 'NEO',
-        time: '지금 예약가능',
-        isUsing: false,
-        userNum: '8521'));
+      });
+    });
+
 
     return Scaffold(
       floatingActionButton: DiamondNotchedFab(
@@ -168,18 +156,35 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       child: RaisedButton(
-        elevation: 3,
-        onPressed: () {
+        elevation: _youAreUsingNow?(room.userNum == _userNum?3:1):3,
+
+        onPressed: _youAreUsingNow?(room.userNum == _userNum?()
+        {
           _getCheckUserNumPref();
-          if(_userNum == '')return;
-
-
-
+          if(_userNum == '')return; //번호 입력 안하고 백키 누를 경우를 대비해 그냥 실행 방지
           if (room.isUsing && (room.userNum.trim() == _userNum)) {
             Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (BuildContext context) =>
-                    new ScreenStopWatch(room.roomNum),
+                new ScreenStopWatch(room.roomNum),
+              ),
+            );
+          } else {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (BuildContext context) => new ScreenRoom(room),
+              ),
+            );
+          }
+        }:(){}):()
+        {
+          _getCheckUserNumPref();
+          if(_userNum == '')return; //번호 입력 안하고 백키 누를 경우를 대비해 그냥 실행 방지
+          if (room.isUsing && (room.userNum.trim() == _userNum)) {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (BuildContext context) =>
+                new ScreenStopWatch(room.roomNum),
               ),
             );
           } else {
@@ -190,7 +195,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
             );
           }
         },
-        color: Colors.white,
+        color: _youAreUsingNow?(room.userNum == _userNum?Colors.white:Colors.white60):Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8.0),
         ),
