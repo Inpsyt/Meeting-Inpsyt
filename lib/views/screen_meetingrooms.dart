@@ -6,11 +6,10 @@ import 'package:inpsyt_meeting/constants/const_colors.dart';
 import 'package:inpsyt_meeting/views/screen_firstAuthen.dart';
 import 'package:inpsyt_meeting/views/screen_room.dart';
 import 'package:inpsyt_meeting/views/screen_stopwatch.dart';
-import 'package:inpsyt_meeting/views/widgets/widget_buttons.dart';
-import 'package:diamond_notched_fab/diamond_fab_notched_shape.dart';
 import 'package:diamond_notched_fab/diamond_notched_fab.dart';
 import 'package:inpsyt_meeting/models/model_meetingroom.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:qrscan/qrscan.dart' as scanner;
 
 class ScreenMeetingRooms extends StatefulWidget {
   @override
@@ -23,10 +22,15 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
   String _userNum = '';
   bool _youAreUsingNow = false;
 
+  String _output = 'Empty Scan Code'; //qr 인식용
+
   _getCheckUserNumPref() async {
     _preferences = await SharedPreferences.getInstance();
 
     _userNum = (_preferences.getString('userNum') ?? '');
+
+
+
 
     if (_userNum == '') {
       final result = await Navigator.push(
@@ -44,6 +48,14 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
     setState(() {
       //화면의 사용자: 이부분에 번호가 안뜨므로 async가 끝나는대로 화면 새로그리기함
     });
+  }
+
+
+  Future _scan() async {
+    //스캔 시작 - 이때 스캔 될때까지 blocking
+    String barcode = await scanner.scan();
+    //스캔 완료하면 _output 에 문자열 저장하면서 상태 변경 요청.
+    setState(() => _output = barcode);
   }
 
   @override
@@ -71,7 +83,10 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
 
     return Scaffold(
       floatingActionButton: DiamondNotchedFab(
-        onPressed: () {},
+        onPressed: () {
+          _scan();
+
+        },
         tooltip: 'QR스캔',
         borderRadius: 14,
         child: Padding(
@@ -228,4 +243,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
     //if(room)
 
   }
+
+
+
 }
