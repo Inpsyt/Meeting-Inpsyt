@@ -2,10 +2,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:inpsyt_meeting/constants/const_colors.dart';
 import 'package:inpsyt_meeting/models/model_meetingroom.dart';
+import 'package:inpsyt_meeting/views/screen_firstAuthen.dart';
 import 'package:inpsyt_meeting/views/screen_result.dart';
 import 'package:inpsyt_meeting/views/widgets/widget_buttons.dart';
 import 'package:intl/intl.dart';
 import 'package:ntp/ntp.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ScreenTimeSelect extends StatefulWidget {
   final ModelMeetingRoom modelMeetingRoom;
@@ -19,8 +21,42 @@ class ScreenTimeSelect extends StatefulWidget {
 
 class _ScreenTimeSelectState extends State<ScreenTimeSelect> {
   final ModelMeetingRoom modelMeetingRoom;
-
+  SharedPreferences _preferences;
+  String _userNum = '';
   _ScreenTimeSelectState(this.modelMeetingRoom);
+
+
+
+  _getCheckUserNumPref() async {
+    _preferences = await SharedPreferences.getInstance();
+
+    _userNum = (_preferences.getString('userNum') ?? '');
+
+    if (_userNum == '') {
+      final result = await Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (BuildContext context) => ScreenFistAuthen()));
+
+      if (result == 'authenticated') {
+        _getCheckUserNumPref();
+      }
+
+    }
+
+    print('userNum=' + _userNum);
+    setState(() {
+      //화면의 사용자: 이부분에 번호가 안뜨므로 async가 끝나는대로 화면 새로그리기함
+    });
+  }
+
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _getCheckUserNumPref();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -213,7 +249,7 @@ class _ScreenTimeSelectState extends State<ScreenTimeSelect> {
   _documentUsingSet(ModelMeetingRoom room, String timeSet){ //room은 정보제공용, 그 우측으로는 모두 수정할 사항들 기입
     Firestore.instance.collection('rooms').document(room.roomNum.toString()).updateData({'isUsing':true});
     Firestore.instance.collection('rooms').document(room.roomNum.toString()).updateData({'time':timeSet});
-    Firestore.instance.collection('rooms').document(room.roomNum.toString()).updateData({'userNum':'1234'}); //번호획득 로직 구현 필요
+    Firestore.instance.collection('rooms').document(room.roomNum.toString()).updateData({'userNum':_userNum}); //번호획득 로직 구현 필요
     
   }
 

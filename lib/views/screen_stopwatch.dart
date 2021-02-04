@@ -22,6 +22,7 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
 
 
 
+  Timer _timer;
   final roomNum;
   _ScreenStopWatchState(this.roomNum);
  // DateTime endTime;
@@ -57,7 +58,7 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
     //await sleep(Duration(seconds: 1));
     if(leftTime <= 0){
 
-      Vibration.vibrate(duration: 1000);
+      Vibration.vibrate(duration: 1500);
       print('시작 경과'+leftTime.toString());
 
       _checkOutAndPop();
@@ -67,14 +68,24 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
   }
 
 
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    _timer.cancel();
+  }
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
 
+
+
      Timer.periodic(Duration(seconds: 3), (Timer t) {
+       _timer = t;
       setState(() {
+
 
         if(leftTime <=0){
           t.cancel();

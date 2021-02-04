@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:inpsyt_meeting/constants/const_colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -12,19 +14,20 @@ class _ScreenFistAuthenState extends State<ScreenFistAuthen> {
 
   String userNum = '';
   SharedPreferences _preferences;
-  TextEditingController controller;
+  final  controller =TextEditingController();
 
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    _getUserPref();
+    _getPref();
+
 
 
   }
 
-  _getUserPref() async{
+  _getPref() async{
     _preferences = await SharedPreferences.getInstance();
     /*
     setState(() {
@@ -32,16 +35,23 @@ class _ScreenFistAuthenState extends State<ScreenFistAuthen> {
       controller.text = userNum;
       print('usernum='+userNum);
     });
-
      */
+
+  }
+
+  _loadUserPref() {
+    userNum = (_preferences.getString('userNum')??'12');
+    controller.text = userNum;
+    print('usernum='+userNum);
   }
 
 
-  _saveUserPref() async{
+  _saveUserPref(){
     setState(() {
       userNum = controller.text.trim();
       _preferences.setString('userNum', userNum);
-      print('usernum='+userNum);
+      _loadUserPref();
+
     });
   }
 
@@ -84,7 +94,9 @@ class _ScreenFistAuthenState extends State<ScreenFistAuthen> {
             RaisedButton(
               onPressed: () {
                 _saveUserPref();
+                Navigator.pop(context,'authenticated');
 
+                //_loadUserPref();
 
               },
               color: color_skyBlue,

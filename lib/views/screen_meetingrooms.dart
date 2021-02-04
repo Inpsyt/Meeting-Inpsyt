@@ -1,12 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:inpsyt_meeting/constants/const_colors.dart';
+import 'package:inpsyt_meeting/views/screen_firstAuthen.dart';
 import 'package:inpsyt_meeting/views/screen_room.dart';
 import 'package:inpsyt_meeting/views/screen_stopwatch.dart';
 import 'package:inpsyt_meeting/views/widgets/widget_buttons.dart';
 import 'package:diamond_notched_fab/diamond_fab_notched_shape.dart';
 import 'package:diamond_notched_fab/diamond_notched_fab.dart';
 import 'package:inpsyt_meeting/models/model_meetingroom.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ScreenMeetingRooms extends StatefulWidget {
   @override
@@ -15,12 +17,42 @@ class ScreenMeetingRooms extends StatefulWidget {
 
 class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
   List<ModelMeetingRoom> roomList;
+  SharedPreferences _preferences;
+  String _userNum = '';
+
+  _getCheckUserNumPref() async {
+    _preferences = await SharedPreferences.getInstance();
+
+    _userNum = (_preferences.getString('userNum') ?? '');
+
+    if (_userNum == '') {
+      final result = await Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (BuildContext context) => ScreenFistAuthen()));
+
+      if (result == 'authenticated') {
+        _getCheckUserNumPref();
+      }
+
+    }
+
+    print('userNum=' + _userNum);
+    setState(() {
+      //화면의 사용자: 이부분에 번호가 안뜨므로 async가 끝나는대로 화면 새로그리기함
+    });
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+
+    _getCheckUserNumPref();
+  }
 
   @override
   Widget build(BuildContext context) {
-
-    print('list');
-
     roomList = <ModelMeetingRoom>[];
     roomList.add(ModelMeetingRoom(
         roomNum: 1,
@@ -84,7 +116,16 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
                   ),
                   bottom: 20,
                   left: 15,
-                )
+                ),
+                Positioned(child:  Text(
+                  '사용자: '+_userNum,
+                  style: TextStyle(
+                      color: color_white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold),
+                ),
+                  bottom: 20,
+                  right: 15,)
               ],
             ),
           ),
@@ -129,32 +170,25 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
       child: RaisedButton(
         elevation: 3,
         onPressed: () {
+          _getCheckUserNumPref();
+          if(_userNum == '')return;
 
 
 
-          if(room.isUsing) {
-
+          if (room.isUsing ) {
             Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (BuildContext context) =>
-                new ScreenStopWatch(room.roomNum),
+                    new ScreenStopWatch(room.roomNum),
               ),
             );
-
-
-          }else {
+          } else {
             Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (BuildContext context) => new ScreenRoom(room),
               ),
             );
           }
-
-
-
-
-
-
         },
         color: Colors.white,
         shape: RoundedRectangleBorder(
@@ -171,7 +205,10 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
                 style: TextStyle(fontSize: 21),
               ),
               Text(
-                room.isUsing?room.time.substring(10, room.time.length).trim()+'부터 사용가능':'현재 사용가능',
+                room.isUsing
+                    ? room.time.substring(10, room.time.length).trim() +
+                        '부터 사용가능'
+                    : '현재 사용가능',
                 style: TextStyle(fontSize: 16),
               )
             ],
