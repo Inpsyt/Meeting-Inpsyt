@@ -8,6 +8,7 @@ import 'package:inpsyt_meeting/views/screen_room.dart';
 import 'package:inpsyt_meeting/views/screen_stopwatch.dart';
 import 'package:diamond_notched_fab/diamond_notched_fab.dart';
 import 'package:inpsyt_meeting/models/model_meetingroom.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
 
@@ -52,6 +53,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
 
 
   Future _scan() async {
+    await Permission.camera.request();
     //스캔 시작 - 이때 스캔 될때까지 blocking
     String barcode = await scanner.scan();
     //스캔 완료하면 _output 에 문자열 저장하면서 상태 변경 요청.
