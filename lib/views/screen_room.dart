@@ -116,11 +116,11 @@ class _ScreenRoomState extends State<ScreenRoom> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 Text(
-                  modelMeetingRoom.isUsing?'현재 사용중입니다!':'체크인 하세요!',
+                  modelMeetingRoom.isUsing?'사용중!':'체크인 하세요!',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                      color: modelMeetingRoom.isUsing?color_yellow:color_dark,
-                      fontSize: 25,
+                      color: modelMeetingRoom.isUsing?color_dark:color_dark,
+                      fontSize: 35,
                       fontWeight: FontWeight.bold),
                 ),
                 modelMeetingRoom.isUsing?Text('사용자 : '+modelMeetingRoom.userNum,style: TextStyle(fontSize: 17),):GradientButton(
