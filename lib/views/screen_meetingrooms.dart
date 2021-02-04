@@ -175,7 +175,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
 
 
 
-          if (room.isUsing ) {
+          if (room.isUsing && (room.userNum.trim() == _userNum)) {
             Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (BuildContext context) =>
@@ -216,5 +216,11 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
         ),
       ),
     );
+  }
+
+  Widget _roomStatus(){
+
+    //if(room)
+
   }
 }
