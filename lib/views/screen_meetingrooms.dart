@@ -166,7 +166,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
             Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (BuildContext context) =>
-                new ScreenStopWatch(room.roomNum),
+                new ScreenStopWatch(room),
               ),
             );
           } else {
@@ -184,7 +184,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
             Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (BuildContext context) =>
-                new ScreenStopWatch(room.roomNum),
+                new ScreenStopWatch(room),
               ),
             );
           } else {

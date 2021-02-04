@@ -11,11 +11,11 @@ import 'package:vibration/vibration.dart';
 
 class ScreenStopWatch extends StatefulWidget {
 
-  final int roomNum;
-  ScreenStopWatch(this.roomNum);
+  final ModelMeetingRoom _modelMeetingRoom;
+  ScreenStopWatch(this._modelMeetingRoom);
 
   @override
-  _ScreenStopWatchState createState() => _ScreenStopWatchState(this.roomNum);
+  _ScreenStopWatchState createState() => _ScreenStopWatchState(this._modelMeetingRoom);
 }
 
 class _ScreenStopWatchState extends State<ScreenStopWatch> {
@@ -23,9 +23,9 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
 
 
   Timer _timer;
-  final roomNum;
-  _ScreenStopWatchState(this.roomNum);
- // DateTime endTime;
+  final ModelMeetingRoom _modelMeetingRoom;
+  _ScreenStopWatchState(this._modelMeetingRoom);
+ // DateTime endTime
   DateTime currentTime;
 
   ModelMeetingRoom newRoom; //지금 현재 데이터베이스에 있는 방정보
@@ -175,7 +175,7 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
                   ],
                 ),
                 Text(
-                  newRoom==null?'불러오는중..':newRoom.roomName,
+                  _modelMeetingRoom==null?'불러오는중..':_modelMeetingRoom.roomName,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                       color: color_yellow,
@@ -207,7 +207,7 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
             child:
 
             StreamBuilder(
-              stream: Firestore.instance.collection('rooms').document(roomNum.toString()).snapshots(),
+              stream: Firestore.instance.collection('rooms').document(_modelMeetingRoom.roomNum.toString()).snapshots(),
               builder: (context,snapshot){
                 if(!snapshot.hasData){
                   return CircularProgressIndicator();
@@ -297,7 +297,7 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
 
     Navigator.pop(context);
     newRoom = null;
-    Firestore.instance.collection('rooms').document(roomNum.toString()).updateData({'time':'none','isUsing':false,'userNum':'none'});
+    Firestore.instance.collection('rooms').document(_modelMeetingRoom.roomNum.toString()).updateData({'time':'none','isUsing':false,'userNum':'none'});
 
   }
 }
