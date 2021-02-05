@@ -188,9 +188,17 @@ class _ScreenRoomState extends State<ScreenRoom> {
     );
 
     if(result == 'selected'){
-      Navigator.pop(context);
+      Navigator.pop(context,'roomfinish');
     }
 
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+
+    Navigator.pop(context,'roomfinish');
+    super.dispose();
   }
 
 }

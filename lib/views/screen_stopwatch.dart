@@ -8,24 +8,25 @@ import 'package:inpsyt_meeting/models/model_meetingroom.dart';
 import 'package:inpsyt_meeting/views/widgets/widget_buttons.dart';
 import 'package:ntp/ntp.dart';
 import 'package:vibration/vibration.dart';
+import 'package:foreground_service/foreground_service.dart';
 
 class ScreenStopWatch extends StatefulWidget {
-
   final ModelMeetingRoom _modelMeetingRoom;
+
   ScreenStopWatch(this._modelMeetingRoom);
 
   @override
-  _ScreenStopWatchState createState() => _ScreenStopWatchState(this._modelMeetingRoom);
+  _ScreenStopWatchState createState() =>
+      _ScreenStopWatchState(this._modelMeetingRoom);
 }
 
 class _ScreenStopWatchState extends State<ScreenStopWatch> {
-
-
-
   Timer _timer;
   final ModelMeetingRoom _modelMeetingRoom;
+
   _ScreenStopWatchState(this._modelMeetingRoom);
- // DateTime endTime
+
+  // DateTime endTime
   DateTime currentTime;
 
   ModelMeetingRoom newRoom; //지금 현재 데이터베이스에 있는 방정보
@@ -52,21 +53,17 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
 
  */
 
-  _checkTimeOver() async{ //자동 나가기
-
+  _checkTimeOver() async {
+    //자동 나가기
 
     //await sleep(Duration(seconds: 1));
-    if(leftTime <= 0){
-
+    if (leftTime <= 0) {
       Vibration.vibrate(duration: 1500);
-      print('시작 경과'+leftTime.toString());
+      print('시작 경과' + leftTime.toString());
 
       _checkOutAndPop();
-
     }
-
   }
-
 
   @override
   void dispose() {
@@ -80,41 +77,34 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
     // TODO: implement initState
     super.initState();
 
+    startForegroundService();
 
-
-     Timer.periodic(Duration(seconds: 3), (Timer t) {
-       _timer = t;
+    Timer.periodic(Duration(seconds: 3), (Timer t) {
+      _timer = t;
       setState(() {
-
-
-        if(leftTime <=0){
+        if (leftTime <= 0) {
           t.cancel();
         }
-
       });
     });
   }
 
-
   @override
   Widget build(BuildContext context) {
-
     double deviceHeight = MediaQuery.of(context).size.height;
     double deviceWidth = MediaQuery.of(context).size.width;
 
-   // Vibration.vibrate(duration: 200);
+    // Vibration.vibrate(duration: 200);
     print('stopwatch');
 
     _checkTimeOver();
-  //  _getDocument(roomNum);
-
-
+    //  _getDocument(roomNum);
 
     //endTime = DateTime.parse(newRoom==null?'2222-01-01 00:00':newRoom.time.trim());
 
     currentTime = DateTime.now();
 
-  //  _checkTimeOver();
+    //  _checkTimeOver();
 
     return Scaffold(
       // floatingActionButton: DiamondNotchedFab(
@@ -154,9 +144,7 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
                           color: color_white,
                         ),
                         onPressed: () {
-
                           Navigator.pop(context);
-
                         }),
                     Text(
                       'Meeting Room',
@@ -175,7 +163,9 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
                   ],
                 ),
                 Text(
-                  _modelMeetingRoom==null?'불러오는중..':_modelMeetingRoom.roomName,
+                  _modelMeetingRoom == null
+                      ? '불러오는중..'
+                      : _modelMeetingRoom.roomName,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                       color: color_yellow,
@@ -185,7 +175,6 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
               ],
             ),
           ),
-
 
           SizedBox(
             height: 30,
@@ -204,100 +193,138 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
                     blurRadius: 9),
               ],
             ),
-            child:
-
-            StreamBuilder(
-              stream: Firestore.instance.collection('rooms').document(_modelMeetingRoom.roomNum.toString()).snapshots(),
-              builder: (context,snapshot){
-                if(!snapshot.hasData){
+            child: StreamBuilder(
+              stream: Firestore.instance
+                  .collection('rooms')
+                  .document(_modelMeetingRoom.roomNum.toString())
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
                   return CircularProgressIndicator();
-
                 }
 
                 final document = snapshot.data;
 
-
-                leftTime =DateTime.parse(document['time']).difference(DateTime.now()).inMinutes;
-                return
-                  Column(
-                    mainAxisSize: MainAxisSize.max,
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Text(
-                        '현 회의 잔여시간',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            color: color_dark,
-                            fontSize: 25,
-                            fontWeight: FontWeight.bold),
-                      ),
-
-                      Text(
-                       // newRoom==null?'불러오는 중':endTime.difference(currentTime).inMinutes.toString()+'분',
-                        leftTime.toString() + '분',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            color: color_dark,
-                            fontSize: newRoom==null?50:80,
-                            fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        '남았습니다',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            color: color_dark,
-                            fontSize: 25,
-                            fontWeight: FontWeight.bold),
-                      ),
-
-                      Container(child: Image.asset('assets/images/anime.gif'),height: 100,),
-
-                      GradientButton(
-                          Column(
-                            children: [
-                              Text(
-                                '체크아웃',
-                                style: TextStyle(color: color_white,fontSize: 25,fontWeight: FontWeight.bold),
-                              ),
-
-                            ],
-                          ),
-                          color_gradientBlueStart,
-                          color_gradientBlueEnd,
-                          60,
-                          deviceWidth/1.3,
-                          10,(){
-
-                        _checkOutAndPop();
-
-                      }),
-
-
-                    ],
-                  );
-
+                leftTime = DateTime.parse(document['time'])
+                    .difference(DateTime.now())
+                    .inMinutes;
+                return Column(
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Text(
+                      '현 회의 잔여시간',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          color: color_dark,
+                          fontSize: 25,
+                          fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      // newRoom==null?'불러오는 중':endTime.difference(currentTime).inMinutes.toString()+'분',
+                      leftTime.toString() + '분',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          color: color_dark,
+                          fontSize: newRoom == null ? 50 : 80,
+                          fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      '남았습니다',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          color: color_dark,
+                          fontSize: 25,
+                          fontWeight: FontWeight.bold),
+                    ),
+                    Container(
+                      child: Image.asset('assets/images/anime.gif'),
+                      height: 100,
+                    ),
+                    GradientButton(
+                        Column(
+                          children: [
+                            Text(
+                              '체크아웃',
+                              style: TextStyle(
+                                  color: color_white,
+                                  fontSize: 25,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                        color_gradientBlueStart,
+                        color_gradientBlueEnd,
+                        60,
+                        deviceWidth / 1.3,
+                        10, () {
+                      _checkOutAndPop();
+                    }),
+                  ],
+                );
               },
             ),
-
           ),
 
           Expanded(
               child: Container(
-                child: Center(child: Text('현재시각 2021.02.01 14:20',style: TextStyle(color: color_deepShadowGrey,fontSize: 19),)),
-              ))
+            child: Center(
+                child: Text(
+              '현재시각 2021.02.01 14:20',
+              style: TextStyle(color: color_deepShadowGrey, fontSize: 19),
+            )),
+          ))
         ],
       ),
     );
+  }
+
+  void startForegroundService() async {
+    if (!(await ForegroundService.foregroundServiceIsStarted())) {
+      await ForegroundService.setServiceIntervalSeconds(5);
+
+      //necessity of editMode is dubious (see function comments)
+      await ForegroundService.notification.startEditMode();
+
+      await ForegroundService.notification
+          .setTitle("Example Title: ${DateTime.now()}");
+      await ForegroundService.notification
+          .setText("Example Text: ${DateTime.now()}");
+
+      await ForegroundService.notification.finishEditMode();
+
+      await ForegroundService.startForegroundService(foregroundServiceFunction);
+      await ForegroundService.getWakeLock();
+    }
+
+    ///this exists solely in the main app/isolate,
+    ///so needs to be redone after every app kill+relaunch
+    await ForegroundService.setupIsolateCommunication((data) {
+      debugPrint("main received: $data");
+    });
+  }
 
 
+
+  void foregroundServiceFunction() {
+    debugPrint("The current time is: ${DateTime.now()}");
+    ForegroundService.notification.setText("The time was: ${DateTime.now()}");
+
+    if (!ForegroundService.isIsolateCommunicationSetup) {
+      ForegroundService.setupIsolateCommunication((data) {
+        debugPrint("bg isolate received: $data");
+      });
+    }
+
+    ForegroundService.sendToPort("message from bg isolate");
   }
 
   _checkOutAndPop() {
-
-
     Navigator.pop(context);
     newRoom = null;
-    Firestore.instance.collection('rooms').document(_modelMeetingRoom.roomNum.toString()).updateData({'time':'none','isUsing':false,'userNum':'none'});
-
+    Firestore.instance
+        .collection('rooms')
+        .document(_modelMeetingRoom.roomNum.toString())
+        .updateData({'time': 'none', 'isUsing': false, 'userNum': 'none'});
   }
 }

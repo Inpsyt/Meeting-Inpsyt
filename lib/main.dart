@@ -21,7 +21,11 @@ void main() {
     );
   };
   runApp(MyApp());
+
 }
+
+
+
 
 class MyApp extends StatelessWidget {
   @override
@@ -31,6 +35,7 @@ class MyApp extends StatelessWidget {
 
 
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
 
       // home: StreamBuilder(
       //   stream: getLinksStream(),

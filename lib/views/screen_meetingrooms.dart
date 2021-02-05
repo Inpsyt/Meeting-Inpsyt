@@ -25,6 +25,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
   SharedPreferences _preferences;
   String _userNum = '';
   bool _youAreUsingNow = false;
+  bool _nowInRoom = false;
 
   String _output = 'Empty Scan Code'; //qr 인식용
 
@@ -75,12 +76,14 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
     String initialLink;
 
     try {
-      initialLink = await getInitialLink();
+      initialLink = await  getInitialLink();
       print(initialLink);
 
       if (initialLink != null) {
         _entryRoomWithUni(initialLink);
+        print(initialLink);
       }
+      initialLink = null;
     } on PlatformException {}
   }
 
@@ -97,6 +100,10 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
   @override
   Widget build(BuildContext context) {
 
+   // initState();
+
+   // initUniLisks();
+
 
     FlutterNfcReader.onTagDiscovered().listen((onData) {
       print(onData.id);
@@ -111,6 +118,8 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
       }else if(onData.id == nfcRoomInfo[4]){
         _entryRoomWithUni('room=4');
       }
+
+
 
     });
 
@@ -220,6 +229,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
         elevation: _youAreUsingNow ? (room.userNum == _userNum ? 3 : 1) : 3,
         onPressed: () {
 
+          _nowInRoom = false;
 
           _getCheckUserNumPref();
           _entryRoom(room);
@@ -227,7 +237,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
         },
 
         color: _youAreUsingNow
-            ? (room.userNum == _userNum ? Colors.white : Colors.white60)
+            ? (room.userNum == _userNum ? Colors.white : Colors.grey)
             : Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8.0),
@@ -256,30 +266,34 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
     );
   }
 
-  Widget _roomStatus() {
-    //if(room)
-  }
 
   _entryRoom(ModelMeetingRoom room){
 
+
+/*
     if (_youAreUsingNow && room.userNum != _userNum) {
       return;
     } //현재 내가 어떤 방에 들어있을땐 다른방에 못들어가도록
-
+*/
     if (_userNum == '') return; //번호 입력 안하고 백키 누를 경우를 대비해 그냥 실행 방지
     if (room.isUsing && (room.userNum.trim() == _userNum)) {
-      Navigator.of(context).push(
+        Navigator.of(context).push(
         MaterialPageRoute(
           builder: (BuildContext context) => new ScreenStopWatch(room),
         ),
       );
     } else {
-      Navigator.of(context).push(
+
+      if(_youAreUsingNow)return;
+      //이미 회의중이라면 예약조차 몬하게
+        Navigator.of(context).push(
         MaterialPageRoute(
           builder: (BuildContext context) => new ScreenRoom(room),
         ),
       );
+
     }
+
   }
 
   _entryRoomWithUni(String uri) {
@@ -297,9 +311,9 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
                   time: value['time'],
                   isUsing: value['isUsing'],
                   userNum: value['userNum']),
-
-      _entryRoom(room)
-
+      
+        _entryRoom(room)
+      
 
             });
   }
