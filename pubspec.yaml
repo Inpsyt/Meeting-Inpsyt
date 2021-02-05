@@ -31,6 +31,9 @@ dependencies:
   shared_preferences: ^0.5.3
   qrscan: ^0.2.22
   permission_handler: ^5.0.1+1
+  uni_links: ^0.4.0
+
+  flutter_nfc_reader: ^0.1.0
 
   cupertino_icons: ^1.0.0
   diamond_notched_fab: ^0.0.1

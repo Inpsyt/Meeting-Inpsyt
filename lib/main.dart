@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:inpsyt_meeting/views/screen_firstAuthen.dart';
 import 'package:inpsyt_meeting/views/screen_meetingrooms.dart';
 import 'package:inpsyt_meeting/constants/const_colors.dart';
+import 'package:uni_links/uni_links.dart';
+
+
 
 void main() {
   ErrorWidget.builder = (FlutterErrorDetails details) {
@@ -24,7 +27,27 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
+
+
+
     return MaterialApp(
+
+      // home: StreamBuilder(
+      //   stream: getLinksStream(),
+      //   builder: (context,snapshot){
+      //
+      //     if(snapshot.hasData) {
+      //       var uri = Uri.parse(snapshot.data);
+      //       var list = uri.queryParametersAll.entries.toList();
+      //
+      //       return Text(list.map((e) => e.toString()).join('-'));
+      //     }else{
+      //       return Text('');
+      //     }
+      //   },
+      // ),
+      //
+
 
 
      home: ScreenMeetingRooms(),

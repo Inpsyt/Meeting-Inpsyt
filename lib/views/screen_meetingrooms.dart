@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:inpsyt_meeting/constants/const_colors.dart';
 import 'package:inpsyt_meeting/views/screen_firstAuthen.dart';
 import 'package:inpsyt_meeting/views/screen_room.dart';
@@ -11,6 +12,8 @@ import 'package:inpsyt_meeting/models/model_meetingroom.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
+import 'package:uni_links/uni_links.dart';
+import 'package:flutter_nfc_reader/flutter_nfc_reader.dart';
 
 class ScreenMeetingRooms extends StatefulWidget {
   @override
@@ -25,13 +28,18 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
 
   String _output = 'Empty Scan Code'; //qr 인식용
 
+  List<String> nfcRoomInfo = <String>[
+    '0',
+    '0x04c87022422b80',
+    '0x04c86e22422b80',
+    '0x04c86c22422b80',
+    '0x04c87c22422b80'
+  ];
+
   _getCheckUserNumPref() async {
     _preferences = await SharedPreferences.getInstance();
 
     _userNum = (_preferences.getString('userNum') ?? '');
-
-
-
 
     if (_userNum == '') {
       final result = await Navigator.push(
@@ -42,7 +50,6 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
       if (result == 'authenticated') {
         _getCheckUserNumPref();
       }
-
     }
 
     print('userNum=' + _userNum);
@@ -51,13 +58,30 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
     });
   }
 
-
   Future _scan() async {
     await Permission.camera.request();
     //스캔 시작 - 이때 스캔 될때까지 blocking
     String barcode = await scanner.scan();
     //스캔 완료하면 _output 에 문자열 저장하면서 상태 변경 요청.
-    setState(() => _output = barcode);
+
+
+    setState(() {
+      _output = barcode;
+      _entryRoomWithUni(barcode);
+    });
+  }
+
+  Future<Null> initUniLisks() async {
+    String initialLink;
+
+    try {
+      initialLink = await getInitialLink();
+      print(initialLink);
+
+      if (initialLink != null) {
+        _entryRoomWithUni(initialLink);
+      }
+    } on PlatformException {}
   }
 
   @override
@@ -67,27 +91,45 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
 
     _getCheckUserNumPref();
 
-
-
+     initUniLisks();
   }
 
   @override
   Widget build(BuildContext context) {
 
-    Firestore.instance.collection('rooms').where('userNum',isEqualTo: _userNum).getDocuments().then((QuerySnapshot ds){
-      _youAreUsingNow = false;
-      ds.documents.forEach((element) {_youAreUsingNow = true;});
-      setState(() {
 
-      });
+    FlutterNfcReader.onTagDiscovered().listen((onData) {
+      print(onData.id);
+      print(onData.content);
+
+      if(onData.id == nfcRoomInfo[1]){
+        _entryRoomWithUni('room=1');
+      }else if(onData.id == nfcRoomInfo[2]){
+        _entryRoomWithUni('room=2');
+      }else if(onData.id == nfcRoomInfo[3]){
+        _entryRoomWithUni('room=3');
+      }else if(onData.id == nfcRoomInfo[4]){
+        _entryRoomWithUni('room=4');
+      }
+
     });
 
+    Firestore.instance
+        .collection('rooms')
+        .where('userNum', isEqualTo: _userNum)
+        .getDocuments()
+        .then((QuerySnapshot ds) {
+      _youAreUsingNow = false;
+      ds.documents.forEach((element) {
+        _youAreUsingNow = true;
+      });
+      setState(() {});
+    });
 
     return Scaffold(
       floatingActionButton: DiamondNotchedFab(
         onPressed: () {
           _scan();
-
         },
         tooltip: 'QR스캔',
         borderRadius: 14,
@@ -122,15 +164,17 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
                   bottom: 20,
                   left: 15,
                 ),
-                Positioned(child:  Text(
-                  '사용자: '+_userNum,
-                  style: TextStyle(
-                      color: color_white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold),
-                ),
+                Positioned(
+                  child: Text(
+                    '사용자: ' + _userNum,
+                    style: TextStyle(
+                        color: color_white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold),
+                  ),
                   bottom: 20,
-                  right: 15,)
+                  right: 15,
+                )
               ],
             ),
           ),
@@ -173,46 +217,20 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       child: RaisedButton(
-        elevation: _youAreUsingNow?(room.userNum == _userNum?3:1):3,
+        elevation: _youAreUsingNow ? (room.userNum == _userNum ? 3 : 1) : 3,
+        onPressed: () {
+          if (_youAreUsingNow && room.userNum != _userNum) {
+            return;
+          } //현재 내가 어떤 방에 들어있을땐 다른방에 못들어가도록
 
-        onPressed: _youAreUsingNow?(room.userNum == _userNum?()
-        {
           _getCheckUserNumPref();
-          if(_userNum == '')return; //번호 입력 안하고 백키 누를 경우를 대비해 그냥 실행 방지
-          if (room.isUsing && (room.userNum.trim() == _userNum)) {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (BuildContext context) =>
-                new ScreenStopWatch(room),
-              ),
-            );
-          } else {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (BuildContext context) => new ScreenRoom(room),
-              ),
-            );
-          }
-        }:(){}):()
-        {
-          _getCheckUserNumPref();
-          if(_userNum == '')return; //번호 입력 안하고 백키 누를 경우를 대비해 그냥 실행 방지
-          if (room.isUsing && (room.userNum.trim() == _userNum)) {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (BuildContext context) =>
-                new ScreenStopWatch(room),
-              ),
-            );
-          } else {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (BuildContext context) => new ScreenRoom(room),
-              ),
-            );
-          }
+          _entryRoom(room);
+
         },
-        color: _youAreUsingNow?(room.userNum == _userNum?Colors.white:Colors.white60):Colors.white,
+
+        color: _youAreUsingNow
+            ? (room.userNum == _userNum ? Colors.white : Colors.white60)
+            : Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8.0),
         ),
@@ -240,12 +258,46 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
     );
   }
 
-  Widget _roomStatus(){
-
+  Widget _roomStatus() {
     //if(room)
-
   }
 
+  _entryRoom(ModelMeetingRoom room){
+    if (_userNum == '') return; //번호 입력 안하고 백키 누를 경우를 대비해 그냥 실행 방지
+    if (room.isUsing && (room.userNum.trim() == _userNum)) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (BuildContext context) => new ScreenStopWatch(room),
+        ),
+      );
+    } else {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (BuildContext context) => new ScreenRoom(room),
+        ),
+      );
+    }
+  }
+
+  _entryRoomWithUni(String uri) {
+    ModelMeetingRoom room;
+    String parsed = uri.substring(uri.length - 1, uri.length);
+    print(parsed);
+    Firestore.instance
+        .collection('rooms')
+        .document(parsed)
+        .get()
+        .then((value) => {
+              room = new ModelMeetingRoom(
+                  roomNum: value['roomNum'],
+                  roomName: value['roomName'],
+                  time: value['time'],
+                  isUsing: value['isUsing'],
+                  userNum: value['userNum']),
+
+      _entryRoom(room)
 
 
+            });
+  }
 }
