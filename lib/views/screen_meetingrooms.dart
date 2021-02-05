@@ -219,9 +219,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
       child: RaisedButton(
         elevation: _youAreUsingNow ? (room.userNum == _userNum ? 3 : 1) : 3,
         onPressed: () {
-          if (_youAreUsingNow && room.userNum != _userNum) {
-            return;
-          } //현재 내가 어떤 방에 들어있을땐 다른방에 못들어가도록
+
 
           _getCheckUserNumPref();
           _entryRoom(room);
@@ -263,6 +261,11 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
   }
 
   _entryRoom(ModelMeetingRoom room){
+
+    if (_youAreUsingNow && room.userNum != _userNum) {
+      return;
+    } //현재 내가 어떤 방에 들어있을땐 다른방에 못들어가도록
+
     if (_userNum == '') return; //번호 입력 안하고 백키 누를 경우를 대비해 그냥 실행 방지
     if (room.isUsing && (room.userNum.trim() == _userNum)) {
       Navigator.of(context).push(
