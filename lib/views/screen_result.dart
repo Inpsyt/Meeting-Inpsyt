@@ -8,8 +8,6 @@ class ScreenResult extends StatefulWidget {
   final ModelMeetingRoom modelMeetingRoom;
   final int resultMode;
 
-
-
   ScreenResult(this.modelMeetingRoom, this.resultMode);
 
   @override
@@ -57,7 +55,7 @@ class _ScreenResultState extends State<ScreenResult> {
 
     print('result');
 
-   // getDocument(modelMeetingRoom); //지정된 문서 받아오기 실행
+    // getDocument(modelMeetingRoom); //지정된 문서 받아오기 실행
 
     return Scaffold(
       // floatingActionButton: DiamondNotchedFab(
@@ -96,9 +94,7 @@ class _ScreenResultState extends State<ScreenResult> {
                           Icons.arrow_back_ios,
                           color: Colors.transparent,
                         ),
-                        onPressed: () {
-
-                        }),
+                        onPressed: () {}),
                     Text(
                       'Meeting Room',
                       textAlign: TextAlign.center,
@@ -147,12 +143,15 @@ class _ScreenResultState extends State<ScreenResult> {
 
             //컨테이너 내부 영역
             child: StreamBuilder(
-              stream: Firestore.instance.collection('rooms').document(modelMeetingRoom.roomNum.toString()).snapshots(),
-              builder: (context,snapshot){
-                if(!snapshot.hasData){
+              stream: Firestore.instance
+                  .collection('rooms')
+                  .document(modelMeetingRoom.roomNum.toString())
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
                   return CircularProgressIndicator();
                 }
-                
+
                 final data = snapshot.data;
                 return Column(
                   mainAxisSize: MainAxisSize.max,
@@ -167,7 +166,7 @@ class _ScreenResultState extends State<ScreenResult> {
                           fontWeight: FontWeight.bold),
                     ),
                     Text(
-                      _getTimeResult(resultMode,data['time']),
+                      _getTimeResult(resultMode, data['time']),
                       textAlign: TextAlign.center,
                       style: TextStyle(
                           color: color_dark,
@@ -183,14 +182,20 @@ class _ScreenResultState extends State<ScreenResult> {
                           fontWeight: FontWeight.bold),
                     ),
 
-                    RaisedButton(onPressed: (){
-
-
-                      _navigateStopWatch();
-
-
-
-                    },child: Text('확인'),)
+                    Container(
+                      height: 50,
+                      width: 150,
+                      child: RaisedButton(
+                        color: color_skyBlue,
+                        onPressed: () {
+                          _navigateStopWatch();
+                        },
+                        child: Text('확인',style: TextStyle(color: color_white,fontSize: 18,fontWeight: FontWeight.w600),),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    )
                     // 타이머 적용하며 카운트다운은 코딩시간이 오래걸리니 확인버튼만 등재하기
                     // Text(
                     //   '10초 후 자동 종료됩니다',
@@ -202,9 +207,7 @@ class _ScreenResultState extends State<ScreenResult> {
                     // ),
                   ],
                 );
-                
               },
-              
             ),
           ),
 
@@ -232,14 +235,13 @@ class _ScreenResultState extends State<ScreenResult> {
     }
   }
 
-  String _getTimeResult(int resultMode,String time) {
+  String _getTimeResult(int resultMode, String time) {
     //여기서 데이터베이스에서 데이터를 가져올때 모드에따라서 다른값을 가져올수도 있음
     switch (resultMode) {
       case 0:
+        return time == 'none' ? '0' : time.substring(10, time.length).trim();
 
-          return time=='none'?'0':time.substring(10, time.length).trim();
-
-   //   return newRoom.time;
+        //   return newRoom.time;
 
         break;
 
@@ -264,8 +266,12 @@ class _ScreenResultState extends State<ScreenResult> {
     }
   }
 
-  _navigateStopWatch() async{
-    await Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => new ScreenStopWatch(modelMeetingRoom)));
+  _navigateStopWatch() async {
+    await Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (BuildContext context) =>
+                new ScreenStopWatch(modelMeetingRoom)));
 
     // final result = await Navigator.push(context,
     //   PageRouteBuilder(pageBuilder: (context,b,c)=>ScreenStopWatch(newRoom.roomNum),transitionDuration: Duration(seconds: 0)),
@@ -273,6 +279,4 @@ class _ScreenResultState extends State<ScreenResult> {
 
     Navigator.pop(context);
   }
-
-
 }

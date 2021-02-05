@@ -12,7 +12,7 @@
         android:required="true" />
 
    <application
-        android:label="inpsyt_meeting"
+        android:label="MeTing"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
