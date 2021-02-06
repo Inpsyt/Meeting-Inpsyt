@@ -68,8 +68,9 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
   @override
   void dispose() {
     // TODO: implement dispose
-    super.dispose();
     _timer.cancel();
+    super.dispose();
+
   }
 
   @override
@@ -79,8 +80,8 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
 
     startForegroundService();
 
-    Timer.periodic(Duration(seconds: 3), (Timer t) {
-      _timer = t;
+    _timer=Timer.periodic(Duration(seconds: 3), (Timer t) {
+
       setState(() {
         if (leftTime <= 0) {
           t.cancel();
