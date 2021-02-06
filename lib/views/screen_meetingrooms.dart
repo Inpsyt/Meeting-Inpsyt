@@ -87,13 +87,15 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
     } on PlatformException {}
   }
 
+
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
 
     _getCheckUserNumPref();
-
+    
      initUniLisks();
   }
 
@@ -221,6 +223,8 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
         isUsing: doc['isUsing'],
         time: doc['time'],
         userNum: doc['userNum']);
+
+
 
     // ignore: deprecated_member_use
     return Padding(

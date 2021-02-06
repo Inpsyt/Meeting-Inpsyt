@@ -55,6 +55,18 @@ class _ScreenTimeSelectState extends State<ScreenTimeSelect> {
     // TODO: implement initState
     super.initState();
     _getCheckUserNumPref();
+
+  }
+
+  _backgroundStart() async {
+    WidgetsFlutterBinding.ensureInitialized();
+    await FlutterBackgroundService.initialize(onStart);
+    Future.delayed(
+        Duration(milliseconds: 500),
+        () => {
+              FlutterBackgroundService()
+                  .sendData({"roomNum": modelMeetingRoom.roomNum.toString()})
+            });
   }
 
   @override
@@ -252,9 +264,8 @@ class _ScreenTimeSelectState extends State<ScreenTimeSelect> {
         .document(room.roomNum.toString())
         .updateData({'userNum': _userNum}); //번호획득 로직 구현 필요
 
-    WidgetsFlutterBinding.ensureInitialized();
-    FlutterBackgroundService.initialize(onStart);
-  }
 
+    _backgroundStart();
+  }
 
 }

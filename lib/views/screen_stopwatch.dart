@@ -23,7 +23,6 @@ class ScreenStopWatch extends StatefulWidget {
 }
 
 class _ScreenStopWatchState extends State<ScreenStopWatch> {
-
   //final ServiceBackgroundNoti serviceBackgroundNoti = ServiceBackgroundNoti();
   Timer _timer;
   final ModelMeetingRoom _modelMeetingRoom;
@@ -68,6 +67,23 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
     }
   }
 
+  _startBackground() async {
+
+    WidgetsFlutterBinding.ensureInitialized();
+    await FlutterBackgroundService.initialize(onStart);
+
+
+    //FlutterBackgroundService().sendData({"roomNum": _modelMeetingRoom.roomNum.toString()});
+
+
+    Future.delayed(
+        Duration(milliseconds: 500),
+        () => {
+              FlutterBackgroundService().sendData({"roomNum": _modelMeetingRoom.roomNum.toString()})
+            });
+
+  }
+
   @override
   void dispose() {
     // TODO: implement dispose
@@ -81,9 +97,8 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
     super.initState();
 
 
-    WidgetsFlutterBinding.ensureInitialized();
-    FlutterBackgroundService.initialize(onStart);
 
+    _startBackground();
 
     _timer = Timer.periodic(Duration(seconds: 3), (Timer t) {
       setState(() {
@@ -93,7 +108,6 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
       });
     });
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -200,10 +214,7 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
               ],
             ),
 
-
-            child:
-
-            StreamBuilder<Map<String, dynamic>>(
+            child: StreamBuilder<Map<String, dynamic>>(
               stream: FlutterBackgroundService().onDataReceived,
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
@@ -215,66 +226,64 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
                 final data = snapshot.data;
                 // DateTime date = DateTime.tryParse(data["current_date"]);
                 String leftTime = data['leftTime'];
-                return
-
-                  Column(
-                          mainAxisSize: MainAxisSize.max,
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                return Column(
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Text(
+                      '현 회의 잔여시간',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          color: color_dark,
+                          fontSize: 25,
+                          fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      // newRoom==null?'불러오는 중':endTime.difference(currentTime).inMinutes.toString()+'분',
+                      leftTime.toString() + '분',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          color: color_dark,
+                          fontSize: 50,
+                          fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      '남았습니다',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          color: color_dark,
+                          fontSize: 25,
+                          fontWeight: FontWeight.bold),
+                    ),
+                    Container(
+                      child: Image.asset('assets/images/anime.gif'),
+                      height: 100,
+                    ),
+                    GradientButton(
+                        Column(
                           children: [
                             Text(
-                              '현 회의 잔여시간',
-                              textAlign: TextAlign.center,
+                              '체크아웃',
                               style: TextStyle(
-                                  color: color_dark,
+                                  color: color_white,
                                   fontSize: 25,
                                   fontWeight: FontWeight.bold),
                             ),
-                            Text(
-                              // newRoom==null?'불러오는 중':endTime.difference(currentTime).inMinutes.toString()+'분',
-                              leftTime.toString() + '분',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                  color: color_dark,
-                                  fontSize: 50,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                            Text(
-                              '남았습니다',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                  color: color_dark,
-                                  fontSize: 25,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                            Container(
-                              child: Image.asset('assets/images/anime.gif'),
-                              height: 100,
-                            ),
-                            GradientButton(
-                                Column(
-                                  children: [
-                                    Text(
-                                      '체크아웃',
-                                      style: TextStyle(
-                                          color: color_white,
-                                          fontSize: 25,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  ],
-                                ),
-                                color_gradientBlueStart,
-                                color_gradientBlueEnd,
-                                60,
-                                deviceWidth / 1.3,
-                                10, () {
-                              _checkOutAndPop();
-                            }),
                           ],
-                        );
+                        ),
+                        color_gradientBlueStart,
+                        color_gradientBlueEnd,
+                        60,
+                        deviceWidth / 1.3,
+                        10, () {
+                      _checkOutAndPop();
+                    }),
+                  ],
+                );
               },
             ),
 
-              //파이어베이스 직접접속
+            //파이어베이스 직접접속
             // StreamBuilder(
             //   stream: Firestore.instance
             //       .collection('rooms')
@@ -346,8 +355,6 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
             //     );
             //   },
             // ),
-
-
           ),
           Expanded(
               child: Container(
@@ -370,7 +377,4 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
         .document(_modelMeetingRoom.roomNum.toString())
         .updateData({'time': 'none', 'isUsing': false, 'userNum': 'none'});
   }
-
 }
-
-
