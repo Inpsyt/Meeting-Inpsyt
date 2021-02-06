@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:inpsyt_meeting/constants/const_colors.dart';
 import 'package:inpsyt_meeting/models/model_meetingroom.dart';
+import 'package:inpsyt_meeting/services/service_background_noti.dart';
 import 'package:inpsyt_meeting/views/screen_firstAuthen.dart';
 import 'package:inpsyt_meeting/views/screen_result.dart';
 import 'package:inpsyt_meeting/views/widgets/widget_buttons.dart';
@@ -23,9 +25,8 @@ class _ScreenTimeSelectState extends State<ScreenTimeSelect> {
   final ModelMeetingRoom modelMeetingRoom;
   SharedPreferences _preferences;
   String _userNum = '';
+
   _ScreenTimeSelectState(this.modelMeetingRoom);
-
-
 
   _getCheckUserNumPref() async {
     _preferences = await SharedPreferences.getInstance();
@@ -41,7 +42,6 @@ class _ScreenTimeSelectState extends State<ScreenTimeSelect> {
       if (result == 'authenticated') {
         _getCheckUserNumPref();
       }
-
     }
 
     print('userNum=' + _userNum);
@@ -49,7 +49,6 @@ class _ScreenTimeSelectState extends State<ScreenTimeSelect> {
       //화면의 사용자: 이부분에 번호가 안뜨므로 async가 끝나는대로 화면 새로그리기함
     });
   }
-
 
   @override
   void initState() {
@@ -62,7 +61,6 @@ class _ScreenTimeSelectState extends State<ScreenTimeSelect> {
   Widget build(BuildContext context) {
     final double deviceWidth = MediaQuery.of(context).size.width;
     final double deviceHeight = MediaQuery.of(context).size.height;
-
 
     print('timeselect');
     return Scaffold(
@@ -185,16 +183,13 @@ class _ScreenTimeSelectState extends State<ScreenTimeSelect> {
   }
 
   Widget _timeButton(String text) {
-
     final String selectedTime = text.replaceAll('분', '');
 
     return ButtonTheme(
       minWidth: 200,
       child: RaisedButton(
         onPressed: () {
-
-
-          _documentUsingSet(modelMeetingRoom, _addConvertedTime(selectedTime) );
+          _documentUsingSet(modelMeetingRoom, _addConvertedTime(selectedTime));
           _navigateResultScreen(modelMeetingRoom, 0);
         },
         color: color_lightBlue,
@@ -212,9 +207,7 @@ class _ScreenTimeSelectState extends State<ScreenTimeSelect> {
     );
   }
 
-
   _navigateResultScreen(ModelMeetingRoom room, int resultMode) async {
-
     /*
     final result = await Navigator.push(
         context,
@@ -222,35 +215,45 @@ class _ScreenTimeSelectState extends State<ScreenTimeSelect> {
             builder: (BuildContext context) => ScreenResult(room, resultMode)));
 
      */
-    final result = await Navigator.push(context,
-      PageRouteBuilder(pageBuilder: (context,b,c)=>ScreenResult(room,resultMode),transitionDuration: Duration(seconds: 0)),
+    final result = await Navigator.push(
+      context,
+      PageRouteBuilder(
+          pageBuilder: (context, b, c) => ScreenResult(room, resultMode),
+          transitionDuration: Duration(seconds: 0)),
     );
 
     Navigator.pop(context, 'selected');
-
   }
-
 
   String _addConvertedTime(String increaseTime) {
     DateTime time = DateTime.now();
 
-    if(increaseTime.trim() == '하루종일'){
-      time = new DateTime(time.year,time.month,time.day,21,0,0,0,0);
+    if (increaseTime.trim() == '하루종일') {
+      time = new DateTime(time.year, time.month, time.day, 21, 0, 0, 0, 0);
       return DateFormat('yyyy-MM-dd HH:mm').format(time);
     }
 
     time = time.add(Duration(minutes: int.parse(increaseTime)));
     return DateFormat('yyyy-MM-dd HH:mm').format(time);
-
   }
 
+  _documentUsingSet(ModelMeetingRoom room, String timeSet) {
+    //room은 정보제공용, 그 우측으로는 모두 수정할 사항들 기입
+    Firestore.instance
+        .collection('rooms')
+        .document(room.roomNum.toString())
+        .updateData({'isUsing': true});
+    Firestore.instance
+        .collection('rooms')
+        .document(room.roomNum.toString())
+        .updateData({'time': timeSet});
+    Firestore.instance
+        .collection('rooms')
+        .document(room.roomNum.toString())
+        .updateData({'userNum': _userNum}); //번호획득 로직 구현 필요
 
-  
-  _documentUsingSet(ModelMeetingRoom room, String timeSet){ //room은 정보제공용, 그 우측으로는 모두 수정할 사항들 기입
-    Firestore.instance.collection('rooms').document(room.roomNum.toString()).updateData({'isUsing':true});
-    Firestore.instance.collection('rooms').document(room.roomNum.toString()).updateData({'time':timeSet});
-    Firestore.instance.collection('rooms').document(room.roomNum.toString()).updateData({'userNum':_userNum}); //번호획득 로직 구현 필요
-    
+    WidgetsFlutterBinding.ensureInitialized();
+    FlutterBackgroundService.initialize(onStart);
   }
 
 

@@ -1,14 +1,16 @@
 import 'dart:async';
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:inpsyt_meeting/constants/const_colors.dart';
 import 'package:inpsyt_meeting/models/model_meetingroom.dart';
+import 'package:inpsyt_meeting/services/service_background_noti.dart';
 import 'package:inpsyt_meeting/views/widgets/widget_buttons.dart';
 import 'package:ntp/ntp.dart';
 import 'package:vibration/vibration.dart';
-import 'package:foreground_service/foreground_service.dart';
 
 class ScreenStopWatch extends StatefulWidget {
   final ModelMeetingRoom _modelMeetingRoom;
@@ -21,6 +23,8 @@ class ScreenStopWatch extends StatefulWidget {
 }
 
 class _ScreenStopWatchState extends State<ScreenStopWatch> {
+
+  //final ServiceBackgroundNoti serviceBackgroundNoti = ServiceBackgroundNoti();
   Timer _timer;
   final ModelMeetingRoom _modelMeetingRoom;
 
@@ -29,8 +33,7 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
   // DateTime endTime
   DateTime currentTime;
 
-  ModelMeetingRoom newRoom; //지금 현재 데이터베이스에 있는 방정보
-
+  //ModelMeetingRoom newRoom; //지금 현재 데이터베이스에 있는 방정보
   int leftTime = 10;
 
 /*
@@ -70,7 +73,6 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
     // TODO: implement dispose
     _timer.cancel();
     super.dispose();
-
   }
 
   @override
@@ -78,10 +80,12 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
     // TODO: implement initState
     super.initState();
 
-    startForegroundService();
 
-    _timer=Timer.periodic(Duration(seconds: 3), (Timer t) {
+    WidgetsFlutterBinding.ensureInitialized();
+    FlutterBackgroundService.initialize(onStart);
 
+
+    _timer = Timer.periodic(Duration(seconds: 3), (Timer t) {
       setState(() {
         if (leftTime <= 0) {
           t.cancel();
@@ -89,6 +93,7 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
       });
     });
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -194,79 +199,156 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
                     blurRadius: 9),
               ],
             ),
-            child: StreamBuilder(
-              stream: Firestore.instance
-                  .collection('rooms')
-                  .document(_modelMeetingRoom.roomNum.toString())
-                  .snapshots(),
+
+
+            child:
+
+            StreamBuilder<Map<String, dynamic>>(
+              stream: FlutterBackgroundService().onDataReceived,
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
-                  return CircularProgressIndicator();
+                  return Center(
+                    child: CircularProgressIndicator(),
+                  );
                 }
 
-                final document = snapshot.data;
+                final data = snapshot.data;
+                // DateTime date = DateTime.tryParse(data["current_date"]);
+                String leftTime = data['leftTime'];
+                return
 
-                leftTime = DateTime.parse(document['time'])
-                    .difference(DateTime.now())
-                    .inMinutes;
-                return Column(
-                  mainAxisSize: MainAxisSize.max,
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Text(
-                      '현 회의 잔여시간',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          color: color_dark,
-                          fontSize: 25,
-                          fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      // newRoom==null?'불러오는 중':endTime.difference(currentTime).inMinutes.toString()+'분',
-                      leftTime.toString() + '분',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          color: color_dark,
-                          fontSize: newRoom == null ? 50 : 80,
-                          fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      '남았습니다',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          color: color_dark,
-                          fontSize: 25,
-                          fontWeight: FontWeight.bold),
-                    ),
-                    Container(
-                      child: Image.asset('assets/images/anime.gif'),
-                      height: 100,
-                    ),
-                    GradientButton(
-                        Column(
+                  Column(
+                          mainAxisSize: MainAxisSize.max,
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
                             Text(
-                              '체크아웃',
+                              '현 회의 잔여시간',
+                              textAlign: TextAlign.center,
                               style: TextStyle(
-                                  color: color_white,
+                                  color: color_dark,
                                   fontSize: 25,
                                   fontWeight: FontWeight.bold),
                             ),
+                            Text(
+                              // newRoom==null?'불러오는 중':endTime.difference(currentTime).inMinutes.toString()+'분',
+                              leftTime.toString() + '분',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                  color: color_dark,
+                                  fontSize: 50,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                            Text(
+                              '남았습니다',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                  color: color_dark,
+                                  fontSize: 25,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                            Container(
+                              child: Image.asset('assets/images/anime.gif'),
+                              height: 100,
+                            ),
+                            GradientButton(
+                                Column(
+                                  children: [
+                                    Text(
+                                      '체크아웃',
+                                      style: TextStyle(
+                                          color: color_white,
+                                          fontSize: 25,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
+                                color_gradientBlueStart,
+                                color_gradientBlueEnd,
+                                60,
+                                deviceWidth / 1.3,
+                                10, () {
+                              _checkOutAndPop();
+                            }),
                           ],
-                        ),
-                        color_gradientBlueStart,
-                        color_gradientBlueEnd,
-                        60,
-                        deviceWidth / 1.3,
-                        10, () {
-                      _checkOutAndPop();
-                    }),
-                  ],
-                );
+                        );
               },
             ),
-          ),
 
+              //파이어베이스 직접접속
+            // StreamBuilder(
+            //   stream: Firestore.instance
+            //       .collection('rooms')
+            //       .document(_modelMeetingRoom.roomNum.toString())
+            //       .snapshots(),
+            //   builder: (context, snapshot) {
+            //     if (!snapshot.hasData) {
+            //       return CircularProgressIndicator();
+            //     }
+            //
+            //     final document = snapshot.data;
+            //
+            //     leftTime = DateTime.parse(document['time'])
+            //         .difference(DateTime.now())
+            //         .inMinutes;
+            //     return Column(
+            //       mainAxisSize: MainAxisSize.max,
+            //       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            //       children: [
+            //         Text(
+            //           '현 회의 잔여시간',
+            //           textAlign: TextAlign.center,
+            //           style: TextStyle(
+            //               color: color_dark,
+            //               fontSize: 25,
+            //               fontWeight: FontWeight.bold),
+            //         ),
+            //         Text(
+            //           // newRoom==null?'불러오는 중':endTime.difference(currentTime).inMinutes.toString()+'분',
+            //           leftTime.toString() + '분',
+            //           textAlign: TextAlign.center,
+            //           style: TextStyle(
+            //               color: color_dark,
+            //               fontSize: 50,
+            //               fontWeight: FontWeight.bold),
+            //         ),
+            //         Text(
+            //           '남았습니다',
+            //           textAlign: TextAlign.center,
+            //           style: TextStyle(
+            //               color: color_dark,
+            //               fontSize: 25,
+            //               fontWeight: FontWeight.bold),
+            //         ),
+            //         Container(
+            //           child: Image.asset('assets/images/anime.gif'),
+            //           height: 100,
+            //         ),
+            //         GradientButton(
+            //             Column(
+            //               children: [
+            //                 Text(
+            //                   '체크아웃',
+            //                   style: TextStyle(
+            //                       color: color_white,
+            //                       fontSize: 25,
+            //                       fontWeight: FontWeight.bold),
+            //                 ),
+            //               ],
+            //             ),
+            //             color_gradientBlueStart,
+            //             color_gradientBlueEnd,
+            //             60,
+            //             deviceWidth / 1.3,
+            //             10, () {
+            //           _checkOutAndPop();
+            //         }),
+            //       ],
+            //     );
+            //   },
+            // ),
+
+
+          ),
           Expanded(
               child: Container(
             child: Center(
@@ -280,52 +362,15 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
     );
   }
 
-  void startForegroundService() async {
-    if (!(await ForegroundService.foregroundServiceIsStarted())) {
-      await ForegroundService.setServiceIntervalSeconds(5);
-
-      //necessity of editMode is dubious (see function comments)
-      await ForegroundService.notification.startEditMode();
-
-      await ForegroundService.notification
-          .setTitle("Example Title: ${DateTime.now()}");
-      await ForegroundService.notification
-          .setText("Example Text: ${DateTime.now()}");
-
-      await ForegroundService.notification.finishEditMode();
-
-      await ForegroundService.startForegroundService(foregroundServiceFunction);
-      await ForegroundService.getWakeLock();
-    }
-
-    ///this exists solely in the main app/isolate,
-    ///so needs to be redone after every app kill+relaunch
-    await ForegroundService.setupIsolateCommunication((data) {
-      debugPrint("main received: $data");
-    });
-  }
-
-
-
-  void foregroundServiceFunction() {
-    debugPrint("The current time is: ${DateTime.now()}");
-    ForegroundService.notification.setText("The time was: ${DateTime.now()}");
-
-    if (!ForegroundService.isIsolateCommunicationSetup) {
-      ForegroundService.setupIsolateCommunication((data) {
-        debugPrint("bg isolate received: $data");
-      });
-    }
-
-    ForegroundService.sendToPort("message from bg isolate");
-  }
-
   _checkOutAndPop() {
+    FlutterBackgroundService().sendData({'action': 'stopService'});
     Navigator.pop(context);
-    newRoom = null;
     Firestore.instance
         .collection('rooms')
         .document(_modelMeetingRoom.roomNum.toString())
         .updateData({'time': 'none', 'isUsing': false, 'userNum': 'none'});
   }
+
 }
+
+

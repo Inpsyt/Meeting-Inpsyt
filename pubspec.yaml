@@ -32,7 +32,9 @@ dependencies:
   qrscan: ^0.2.22
   permission_handler: ^5.0.1+1
   uni_links: ^0.4.0
-  foreground_service: ^2.0.1+1
+  flutter_background_service: ^0.0.1+21
+  external_app_launcher: ^0.0.1
+
 
   flutter_nfc_reader: ^0.1.0
 
