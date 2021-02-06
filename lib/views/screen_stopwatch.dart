@@ -105,6 +105,7 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
         if (leftTime <= 0) {
           t.cancel();
         }
+        _checkTimeOver();
       });
     });
   }
@@ -117,7 +118,6 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
     // Vibration.vibrate(duration: 200);
     print('stopwatch');
 
-    _checkTimeOver();
     //  _getDocument(roomNum);
 
     //endTime = DateTime.parse(newRoom==null?'2222-01-01 00:00':newRoom.time.trim());

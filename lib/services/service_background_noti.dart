@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:vibration/vibration.dart';
 
+
 void onStart() {
   WidgetsFlutterBinding.ensureInitialized();
   final service = FlutterBackgroundService();
@@ -42,20 +43,32 @@ void onStart() {
 
     //print(roomNum);
 
+    service.sendData({
+      'leftTime': leftTime.toString(),
+    });
+
+    service.setNotificationInfo(
+        title: '잔여시간: ' + leftTime.toString() + '분', //+ leftTime.toString(),
+        content: '시간 초과시 자동으로 Check-Out 됩니다.');
+
     if (leftTime <= 0) {
       //시간 초과시 앱 실행하도록
 
 
+      _runApp();
 
 
-      Vibration.vibrate(duration: 1500);
 
-      Firestore.instance
+      service.sendData({
+        'leftTime': leftTime.toString(),
+      });
+
+
+       Firestore.instance
           .collection('rooms')
           .document(roomNum)
           .updateData({'time': 'none', 'isUsing': false, 'userNum': 'none'});
 
-      _runApp();
 
       timer.cancel();
       service.stopBackgroundService();
@@ -64,24 +77,22 @@ void onStart() {
 
     }
 
-    service.setNotificationInfo(
-        title: '잔여시간: ' + leftTime.toString() + '분', //+ leftTime.toString(),
-        content: '시간 초과시 자동으로 Check-Out 됩니다.');
 
-    service.sendData({
-      'leftTime': leftTime.toString(),
-    });
+
   });
 }
 
 void _runApp() async {
+
   await LaunchApp.openApp(
     androidPackageName: 'com.kkumsoft.inpsyt_meeting',
     iosUrlScheme: 'pulsesecure://',
     appStoreLink:
-        'itms-apps://itunes.apple.com/us/app/pulse-secure/id945832041',
+    'itms-apps://itunes.apple.com/us/app/pulse-secure/id945832041',
     // openStore: false
   );
+
+  Vibration.vibrate(duration: 1500);
   // Enter thr package name of the App you want to open and for iOS add the URLscheme to the Info.plist file.
   // The second arguments decide wether the app redirects PlayStore or AppStore.
   // For testing purpose you can enter com.instagram.android
