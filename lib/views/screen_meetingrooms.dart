@@ -26,7 +26,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
   List<ModelMeetingRoom> roomList;
   SharedPreferences _preferences;
   String _userNum = '';
-  bool _youAreUsingNow = false;
+  bool _youAreUsingNow = true; //오프라인 실행시 또는 체크아웃시 방 들어가지는 버그 수정을 위해 true
   bool _nowInRoom = false;
 
   String _output = 'Empty Scan Code'; //qr 인식용
@@ -126,7 +126,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
       ds.documents.forEach((element) {
         _youAreUsingNow = true;
       });
-      //setState(() {});
+      setState(() {});
     });
 
     setState(() {

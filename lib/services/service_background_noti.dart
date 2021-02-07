@@ -83,19 +83,26 @@ void onStart() {
       //시간 초과시 앱 실행하도록
 
 
-      Vibration.vibrate(duration: 2000);
+
       _runApp();
+
 
       service.sendData({
         'leftTime': leftTime.toString(),
       });
+
 
       Firestore.instance
           .collection('rooms')
           .document(roomNum)
           .updateData({'time': 'none', 'isUsing': false, 'userNum': 'none'});
 
-      //service.stopBackgroundService();
+
+
+      Vibration.vibrate(duration: 2000);
+
+
+
       _stopServiceWithCheck(service);
 
       // return;
