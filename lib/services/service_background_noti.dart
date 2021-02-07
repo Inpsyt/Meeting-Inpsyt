@@ -26,6 +26,7 @@ void onStart() {
   });
 
   service.setForegroundMode(true);
+  service.setAutoStartOnBootMode(false);
   //상단에 notificationbar를 띄우기 위해 명시적으로 true 값을 넣어줌.
 
   Timer.periodic(Duration(seconds: 1), (timer) async {
