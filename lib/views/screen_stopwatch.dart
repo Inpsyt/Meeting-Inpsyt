@@ -405,9 +405,16 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
     );
   }
 
-  _checkOutAndPop() {
+  _checkOutAndPop() async{
 
-    if(backgroundLeftTime>0)FlutterBackgroundService().sendData({'action': 'stopService'}); //FlutterBackgroundService() 가 이미 종료됐는데 sendData통해서 stopService호출되게하면 앱이 다르게 인식하고
+    final service = FlutterBackgroundService();
+
+
+    if((await service.isServiceRunning())){
+      service.sendData({'action':'stopService'});
+    }
+
+   // if(backgroundLeftTime>0)FlutterBackgroundService().sendData({'action': 'stopService'}); //FlutterBackgroundService() 가 이미 종료됐는데 sendData통해서 stopService호출되게하면 앱이 다르게 인식하고
     //상호연동이 안됨
     Navigator.pop(context);
     Firestore.instance

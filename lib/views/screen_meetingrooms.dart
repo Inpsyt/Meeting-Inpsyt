@@ -9,6 +9,7 @@ import 'package:inpsyt_meeting/views/screen_room.dart';
 import 'package:inpsyt_meeting/views/screen_stopwatch.dart';
 import 'package:diamond_notched_fab/diamond_notched_fab.dart';
 import 'package:inpsyt_meeting/models/model_meetingroom.dart';
+import 'package:ntp/ntp.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
@@ -21,6 +22,7 @@ class ScreenMeetingRooms extends StatefulWidget {
 }
 
 class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
+  Timer updateTimer;
   List<ModelMeetingRoom> roomList;
   SharedPreferences _preferences;
   String _userNum = '';
@@ -89,22 +91,118 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
 
 
 
+  _checkRoomsStatus() async{ //사용중인 방이 시간이 지났는지 아닌지를 판별
+   // DateTime curTime = DateTime.now();
+
+    DateTime curTime = await NTP.now(); //네트워크 시간에 맡기기
+    print('네트워크시간 NTP : '+curTime.toString());
+
+    await Firestore.instance //판별을 위해 서버 접속
+        .collection('rooms')
+        .where('isUsing', isEqualTo: true)
+        .getDocuments()
+        .then((QuerySnapshot ds) { //문서를 가져오면 이하 내용 실행
+      ds.documents.forEach((element) {
+
+        print('사용중인게 있다!!! 이게 뜬다라는 것은 서버에 접속된거겠지');
+        print(element['time'].toString());
+        DateTime time = DateTime.parse(element['time'].toString());
+        if(curTime.difference(time).inMinutes>0){ //시간이 지났다면 체크아웃 상태로 업데이트
+         Firestore.instance.collection('rooms').document(element['roomNum'].toString()).updateData({'isUsing':false,'time':'none','userNum':'none'});
+        }
+      });
+
+    });
+
+    //Firestore.instance.collection('rooms').where('userNum',isEqualTo: _userNum).sna
+
+    await Firestore.instance
+        .collection('rooms')
+        .where('userNum', isEqualTo: _userNum)
+        .getDocuments()
+        .then((QuerySnapshot ds) {
+      _youAreUsingNow = false;
+      ds.documents.forEach((element) {
+        _youAreUsingNow = true;
+      });
+      //setState(() {});
+    });
+
+    setState(() {
+
+    });
+
+  }
+
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
 
     _getCheckUserNumPref();
-    
+
+    _checkRoomsStatus();
+
      initUniLisks();
+
+    CollectionReference reference = Firestore.instance.collection('rooms');
+    reference.snapshots().listen((event) {
+      print('문서바꼇당');
+      _checkRoomsStatus();
+
+    });
+
+
+  }
+
+  @override
+  void dispose() {
+    updateTimer.cancel();
+    // TODO: implement dispose
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    print('빌드 새로고침됨');
+
+    // StreamBuilder(
+    //   stream: Firestore.instance.collection('rooms').where('userNum',isEqualTo: _userNum).snapshots(),
+    //   builder: (context,snapshot){
+    //
+    //     if(!snapshot.hasData){
+    //       setState(() {
+    //         print('나 없지롱');
+    //         _youAreUsingNow = false;
+    //       });
+    //       return null;
+    //     }
+    //
+    //     setState(() {
+    //       print('나 있지롱');
+    //       _youAreUsingNow=true;
+    //     });
+    //     return null;
+    //
+    //   },
+    // );
+
+
+
+
 
    // initState();
 
    // initUniLisks();
+
+
+    //_checkRoomsStatus();
+
+
+    //데이터바 바뀔때마다 반응함
+
+
 
 
     FlutterNfcReader.onTagDiscovered().listen((onData) {
@@ -125,17 +223,9 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
 
     });
 
-    Firestore.instance
-        .collection('rooms')
-        .where('userNum', isEqualTo: _userNum)
-        .getDocuments()
-        .then((QuerySnapshot ds) {
-      _youAreUsingNow = false;
-      ds.documents.forEach((element) {
-        _youAreUsingNow = true;
-      });
-      setState(() {});
-    });
+
+
+
 
     return Scaffold(
       floatingActionButton: DiamondNotchedFab(
@@ -204,6 +294,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
                     itemCount: documents.length,
                     itemBuilder: (context, index) {
                       final doc = documents[index];
+
 
                       return _MeetingRoomItem(doc);
                     }),

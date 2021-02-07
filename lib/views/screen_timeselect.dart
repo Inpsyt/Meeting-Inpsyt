@@ -28,6 +28,8 @@ class _ScreenTimeSelectState extends State<ScreenTimeSelect> {
 
   _ScreenTimeSelectState(this.modelMeetingRoom);
 
+  DateTime curTime;
+
   _getCheckUserNumPref() async {
     _preferences = await SharedPreferences.getInstance();
 
@@ -50,11 +52,20 @@ class _ScreenTimeSelectState extends State<ScreenTimeSelect> {
     });
   }
 
+  _setCurrentTime() async{
+    curTime = DateTime.now();
+
+    curTime = await NTP.now();
+
+  }
+
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     _getCheckUserNumPref();
+    _setCurrentTime();
 
   }
 
@@ -237,16 +248,19 @@ class _ScreenTimeSelectState extends State<ScreenTimeSelect> {
     Navigator.pop(context, 'selected');
   }
 
-  String _addConvertedTime(String increaseTime) {
-    DateTime time = DateTime.now();
+  _addConvertedTime(String increaseTime) {
+   // DateTime time = DateTime.now();
+
+
+    print('네트워크시간 NTP : '+curTime.toString());
 
     if (increaseTime.trim() == '하루종일') {
-      time = new DateTime(time.year, time.month, time.day, 21, 0, 0, 0, 0);
-      return DateFormat('yyyy-MM-dd HH:mm').format(time);
+      curTime = new DateTime(curTime.year, curTime.month, curTime.day, 21, 0, 0, 0, 0);
+      return DateFormat('yyyy-MM-dd HH:mm').format(curTime);
     }
 
-    time = time.add(Duration(minutes: int.parse(increaseTime)));
-    return DateFormat('yyyy-MM-dd HH:mm').format(time);
+    curTime = curTime.add(Duration(minutes: int.parse(increaseTime)));
+    return DateFormat('yyyy-MM-dd HH:mm').format(curTime);
   }
 
   _documentUsingSet(ModelMeetingRoom room, String timeSet) {

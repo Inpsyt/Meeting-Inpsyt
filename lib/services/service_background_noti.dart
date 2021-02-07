@@ -11,6 +11,7 @@ void onStart() {
   WidgetsFlutterBinding.ensureInitialized();
   final service = FlutterBackgroundService();
 
+  DateTime endTime;
   int leftTime;
   String roomNum;
 
@@ -23,26 +24,41 @@ void onStart() {
       return;
     }
 
-    roomNum = event["roomNum"];
-    print(roomNum);
+    if(int.parse(event["roomNum"].toString())>0) {
+      roomNum = event["roomNum"];
+      print(roomNum);
+      Firestore.instance.collection('rooms').document(roomNum).get().then((value) => {
+        endTime = DateTime.parse(value['time'].toString().trim())
+      }); /////매우중요!!!!!!!!!!!! instance는 정말 데이터 접속을 1번만 하기 때문에 stream에 적용한게 아닌 이상 더이상 바뀌지 않음
+    }
   });
 
+  //상단에 notificationbar를 띄우기 위해 true 값을 넣어줌.
   service.setForegroundMode(true);
+
   service.setAutoStartOnBootMode(false);
-  //상단에 notificationbar를 띄우기 위해 명시적으로 true 값을 넣어줌.
+
+
+  Firestore.instance.collection('rooms').document(roomNum).get().then((value) => {
+  endTime = DateTime.parse(value['time'].toString().trim())
+  }
+  );
 
   Timer.periodic(Duration(seconds: 1), (timer) async {
     if (!(await service.isServiceRunning())) timer.cancel();
 
-    Firestore.instance
-        .collection('rooms')
-        .document(roomNum)
-        .get()
-        .then((value) => {
-              leftTime = DateTime.parse(value['time'].toString().trim())
-                  .difference(DateTime.now())
-                  .inMinutes,
-            });
+    // Firestore.instance
+    //     .collection('rooms')
+    //     .document(roomNum)
+    //     .get()
+    //     .then((value) => {
+    //           leftTime = DateTime.parse(value['time'].toString().trim())
+    //               .difference(DateTime.now())
+    //               .inMinutes,
+    //         });
+
+    leftTime = endTime.difference(DateTime.now()).inMinutes;
+
 
     //print(roomNum);
 
