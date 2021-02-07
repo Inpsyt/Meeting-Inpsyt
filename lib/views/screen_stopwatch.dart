@@ -34,6 +34,7 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
 
   //ModelMeetingRoom newRoom; //지금 현재 데이터베이스에 있는 방정보
   int leftTime = 10;
+  int backgroundLeftTime;
 
 /*
   _getDocument(int roomNum) async {
@@ -59,17 +60,18 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
     //자동 나가기
 
     //await sleep(Duration(seconds: 1));
-    if (leftTime <= 0) {
-      Vibration.vibrate(duration: 1500);
-      print('시작 경과' + leftTime.toString());
+    if (backgroundLeftTime <= 0) {
+     // Vibration.vibrate(duration: 1500);
+      print('시작 경과' + backgroundLeftTime.toString());
 
-      _checkOutAndPop();
+     // _checkOutAndPop();
     }
   }
 
   _startBackground() async {
 
     WidgetsFlutterBinding.ensureInitialized();
+
     await FlutterBackgroundService.initialize(onStart);
 
 
@@ -123,6 +125,7 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
     //endTime = DateTime.parse(newRoom==null?'2222-01-01 00:00':newRoom.time.trim());
 
     currentTime = DateTime.now();
+
 
     //  _checkTimeOver();
 
@@ -225,8 +228,8 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
 
                 final data = snapshot.data;
                 // DateTime date = DateTime.tryParse(data["current_date"]);
-                String leftTime = data['leftTime'];
-                return Column(
+                backgroundLeftTime = int.parse(data['leftTime']);
+                return backgroundLeftTime>0?Column(
                   mainAxisSize: MainAxisSize.max,
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
@@ -240,7 +243,7 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
                     ),
                     Text(
                       // newRoom==null?'불러오는 중':endTime.difference(currentTime).inMinutes.toString()+'분',
-                      leftTime.toString() + '분',
+                      backgroundLeftTime.toString() + '분',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                           color: color_dark,
@@ -264,6 +267,39 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
                           children: [
                             Text(
                               '체크아웃',
+                              style: TextStyle(
+                                  color: color_white,
+                                  fontSize: 25,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                        color_gradientBlueStart,
+                        color_gradientBlueEnd,
+                        60,
+                        deviceWidth / 1.3,
+                        10, () {
+                      _checkOutAndPop();
+                    }),
+                  ],
+                ):Column(
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Text(
+                      '회의가 종료되었습니다.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          color: color_dark,
+                          fontSize: 25,
+                          fontWeight: FontWeight.bold),
+                    ),
+
+                    GradientButton(
+                        Column(
+                          children: [
+                            Text(
+                              '나가기',
                               style: TextStyle(
                                   color: color_white,
                                   fontSize: 25,
@@ -370,7 +406,9 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
   }
 
   _checkOutAndPop() {
-    FlutterBackgroundService().sendData({'action': 'stopService'});
+
+    if(backgroundLeftTime>0)FlutterBackgroundService().sendData({'action': 'stopService'}); //FlutterBackgroundService() 가 이미 종료됐는데 sendData통해서 stopService호출되게하면 앱이 다르게 인식하고
+    //상호연동이 안됨
     Navigator.pop(context);
     Firestore.instance
         .collection('rooms')

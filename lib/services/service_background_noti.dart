@@ -18,7 +18,9 @@ void onStart() {
     if (event["action"] == "stopService") {
       //서비스부분은 애초에 앱과 분리된 개념으로 생각해야된다.
       //따라서 데이터를 주고 받기 위해서는 DataReceive가 필요하고 그에따라 상호작용
-      service.stopBackgroundService(); //앱에서 백그라운드중지요청에따라 서비스 종료
+      //service.stopBackgroundService(); //앱에서 백그라운드중지요청에따라 서비스 종료
+      _stopServiceWithCheck(service);
+      return;
     }
 
     roomNum = event["roomNum"];
@@ -52,12 +54,16 @@ void onStart() {
         title: '잔여시간: ' + leftTime.toString() + '분', //+ leftTime.toString(),
         content: '시간 초과시 자동으로 Check-Out 됩니다.');
 
+    //Vibration.vibrate(duration: 100);
+
+
     if (leftTime <= 0) {
       //시간 초과시 앱 실행하도록
 
 
-      _runApp();
+     // _runApp();
 
+     // Vibration.vibrate(duration: 1500);
 
 
       service.sendData({
@@ -70,10 +76,11 @@ void onStart() {
           .document(roomNum)
           .updateData({'time': 'none', 'isUsing': false, 'userNum': 'none'});
 
+      //service.stopBackgroundService();
+      _stopServiceWithCheck(service);
 
-      timer.cancel();
-      service.stopBackgroundService();
-
+     // return;
+      //timer.cancel();
 
 
     }
@@ -81,6 +88,12 @@ void onStart() {
 
 
   });
+}
+
+void _stopServiceWithCheck(FlutterBackgroundService service) async{
+  if((await service.isServiceRunning())){
+    service.stopBackgroundService();
+  }
 }
 
 void _runApp() async {
@@ -93,7 +106,7 @@ void _runApp() async {
     // openStore: false
   );
 
-  Vibration.vibrate(duration: 1500);
+
   // Enter thr package name of the App you want to open and for iOS add the URLscheme to the Info.plist file.
   // The second arguments decide wether the app redirects PlayStore or AppStore.
   // For testing purpose you can enter com.instagram.android
