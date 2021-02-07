@@ -10,7 +10,6 @@ import 'package:inpsyt_meeting/models/model_meetingroom.dart';
 import 'package:inpsyt_meeting/services/service_background_noti.dart';
 import 'package:inpsyt_meeting/views/widgets/widget_buttons.dart';
 import 'package:ntp/ntp.dart';
-import 'package:vibration/vibration.dart';
 
 class ScreenStopWatch extends StatefulWidget {
   final ModelMeetingRoom _modelMeetingRoom;
@@ -97,7 +96,6 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
   void initState() {
     // TODO: implement initState
     super.initState();
-
 
 
     _startBackground();

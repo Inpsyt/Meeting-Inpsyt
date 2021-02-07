@@ -11,6 +11,7 @@ void onStart() {
   WidgetsFlutterBinding.ensureInitialized();
   final service = FlutterBackgroundService();
 
+
   DateTime endTime;
   int leftTime;
   String roomNum;
@@ -31,12 +32,13 @@ void onStart() {
         endTime = DateTime.parse(value['time'].toString().trim())
       }); /////매우중요!!!!!!!!!!!! instance는 정말 데이터 접속을 1번만 하기 때문에 stream에 적용한게 아닌 이상 더이상 바뀌지 않음
     }
+
   });
 
   //상단에 notificationbar를 띄우기 위해 true 값을 넣어줌.
   service.setForegroundMode(true);
 
-  service.setAutoStartOnBootMode(false);
+  service.setAutoStartOnBootMode(true);
 
 
   Firestore.instance.collection('rooms').document(roomNum).get().then((value) => {
@@ -46,6 +48,7 @@ void onStart() {
 
   Timer.periodic(Duration(seconds: 1), (timer) async {
     if (!(await service.isServiceRunning())) timer.cancel();
+
 
     // Firestore.instance
     //     .collection('rooms')
@@ -57,7 +60,11 @@ void onStart() {
     //               .inMinutes,
     //         });
 
+
+
     leftTime = endTime.difference(DateTime.now()).inMinutes;
+
+
 
 
     //print(roomNum);
@@ -72,22 +79,18 @@ void onStart() {
 
     //Vibration.vibrate(duration: 100);
 
-
     if (leftTime <= 0) {
       //시간 초과시 앱 실행하도록
 
 
-     // _runApp();
-
-     // Vibration.vibrate(duration: 1500);
-
+      Vibration.vibrate(duration: 2000);
+      _runApp();
 
       service.sendData({
         'leftTime': leftTime.toString(),
       });
 
-
-       Firestore.instance
+      Firestore.instance
           .collection('rooms')
           .document(roomNum)
           .updateData({'time': 'none', 'isUsing': false, 'userNum': 'none'});
@@ -95,11 +98,12 @@ void onStart() {
       //service.stopBackgroundService();
       _stopServiceWithCheck(service);
 
-     // return;
+      // return;
       //timer.cancel();
 
-
     }
+
+
 
 
 

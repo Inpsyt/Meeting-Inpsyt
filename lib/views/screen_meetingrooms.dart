@@ -36,7 +36,8 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
     '0x04c87022422b80',
     '0x04c86e22422b80',
     '0x04c86c22422b80',
-    '0x04c87c22422b80'
+    '0x04c87c22422b80',
+    '0x04c88022422b80'
   ];
 
   _getCheckUserNumPref() async {
@@ -144,6 +145,10 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
 
     _checkRoomsStatus();
 
+    _nfcReaderSet();
+
+
+
      initUniLisks();
 
     CollectionReference reference = Firestore.instance.collection('rooms');
@@ -163,9 +168,74 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
     super.dispose();
   }
 
+  _nfcReaderSet() {
+
+
+    /*
+     FlutterNfcReader.read().then((onData) {
+      print(onData.id);
+      print(onData.content+'from read');
+
+
+      if(_nowInRoom){
+        return;
+      }
+
+
+
+      if(onData.id == nfcRoomInfo[1]){
+        _entryRoomWithUni('room=1');
+      }else if(onData.id == nfcRoomInfo[2]){
+        _entryRoomWithUni('room=2');
+      }else if(onData.id == nfcRoomInfo[3]){
+        _entryRoomWithUni('room=3');
+      }else if(onData.id == nfcRoomInfo[5]){
+        _entryRoomWithUni('room=4');
+      }
+
+
+    });
+
+
+     */
+
+
+    FlutterNfcReader.onTagDiscovered().listen((onData) {
+      print(onData.id);
+      print(onData.content);
+
+
+      if(_nowInRoom){
+        return;
+      }
+      _nowInRoom = true;
+
+
+      if(onData.id == nfcRoomInfo[1]){
+        _entryRoomWithUni('room=1');
+      }else if(onData.id == nfcRoomInfo[2]){
+        _entryRoomWithUni('room=2');
+      }else if(onData.id == nfcRoomInfo[3]){
+        _entryRoomWithUni('room=3');
+      }else if(onData.id == nfcRoomInfo[4]){
+        _entryRoomWithUni('room=4');
+      }
+      else if(onData.id == nfcRoomInfo[5]){
+        _entryRoomWithUni('room=4');
+      }
+
+
+
+    });
+
+
+  }
+
   @override
   Widget build(BuildContext context) {
     print('빌드 새로고침됨');
+
+
 
     // StreamBuilder(
     //   stream: Firestore.instance.collection('rooms').where('userNum',isEqualTo: _userNum).snapshots(),
@@ -201,27 +271,6 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
 
 
     //데이터바 바뀔때마다 반응함
-
-
-
-
-    FlutterNfcReader.onTagDiscovered().listen((onData) {
-      print(onData.id);
-      print(onData.content);
-
-      if(onData.id == nfcRoomInfo[1]){
-        _entryRoomWithUni('room=1');
-      }else if(onData.id == nfcRoomInfo[2]){
-        _entryRoomWithUni('room=2');
-      }else if(onData.id == nfcRoomInfo[3]){
-        _entryRoomWithUni('room=3');
-      }else if(onData.id == nfcRoomInfo[4]){
-        _entryRoomWithUni('room=4');
-      }
-
-
-
-    });
 
 
 
@@ -362,36 +411,44 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
   }
 
 
-  _entryRoom(ModelMeetingRoom room){
+  _entryRoom(ModelMeetingRoom room)async{
 
 
 /*
     if (_youAreUsingNow && room.userNum != _userNum) {
       return;
     } //현재 내가 어떤 방에 들어있을땐 다른방에 못들어가도록
+
 */
+
+  _nowInRoom = true;
     if (_userNum == '') return; //번호 입력 안하고 백키 누를 경우를 대비해 그냥 실행 방지
     if (room.isUsing && (room.userNum.trim() == _userNum)) {
-        Navigator.of(context).push(
+        await Navigator.of(context).push(
         MaterialPageRoute(
           builder: (BuildContext context) => new ScreenStopWatch(room),
         ),
       );
+        _nowInRoom = false;
     } else {
 
       if(_youAreUsingNow)return;
       //이미 회의중이라면 예약조차 몬하게
-        Navigator.of(context).push(
+        await Navigator.of(context).push(
         MaterialPageRoute(
           builder: (BuildContext context) => new ScreenRoom(room),
         ),
       );
 
+      _nowInRoom = false;
     }
 
   }
 
   _entryRoomWithUni(String uri) {
+
+
+
     ModelMeetingRoom room;
     String parsed = uri.substring(uri.length - 1, uri.length);
     print(parsed);
@@ -406,7 +463,9 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
                   time: value['time'],
                   isUsing: value['isUsing'],
                   userNum: value['userNum']),
-      
+
+
+
         _entryRoom(room)
       
 
