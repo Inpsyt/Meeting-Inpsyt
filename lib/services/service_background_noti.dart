@@ -47,7 +47,7 @@ void onStart() {
   }
   );
 
-  Timer.periodic(Duration(seconds: 2), (timer) async {
+  Timer.periodic(Duration(milliseconds: 500), (timer) async {
     if (!(await service.isServiceRunning())) timer.cancel();
 
 

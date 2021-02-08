@@ -324,6 +324,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
                   bottom: 20,
                   left: 15,
                 ),
+                /* //사용자번호 확인용
                 Positioned(
                   child: Text(
                     '사용자: ' + _userNum,
@@ -335,6 +336,8 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
                   bottom: 20,
                   right: 15,
                 )
+                
+                 */
               ],
             ),
           ),
