@@ -12,7 +12,7 @@ import 'package:inpsyt_meeting/models/model_meetingroom.dart';
 import 'package:ntp/ntp.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-//import 'package:qrscan/qrscan.dart' as scanner;
+import 'package:qrscan/qrscan.dart' as scanner;
 import 'package:uni_links/uni_links.dart';
 import 'package:flutter_nfc_reader/flutter_nfc_reader.dart';
 
@@ -62,7 +62,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
     });
   }
 
-  /* //플레이스토어 업로드시 카메라 권한 문제 때문에 보류
+   //플레이스토어 업로드시 카메라 권한 문제 때문에 보류
   Future _scan() async {
     await Permission.camera.request();
     //스캔 시작 - 이때 스캔 될때까지 blocking
@@ -75,8 +75,8 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
       _entryRoomWithUni(barcode);
     });
   }
-  
-   */
+
+
 
   Future<Null> initUniLisks() async {
     String initialLink;
@@ -100,6 +100,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
 
     DateTime curTime = await NTP.now(); //네트워크 시간에 맡기기
     print('네트워크시간 NTP : '+curTime.toString());
+
 
     await Firestore.instance //판별을 위해 서버 접속
         .collection('rooms')
@@ -146,7 +147,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
 
     _getCheckUserNumPref();
 
-    _checkRoomsStatus();
+    //_checkRoomsStatus();
 
     _nfcReaderSet();
 
@@ -280,7 +281,8 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
 
 
     return Scaffold(
-      /*
+
+
       floatingActionButton: DiamondNotchedFab(
         onPressed: () {
           _scan();
@@ -293,7 +295,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
       ),
 
 
-       */
+
 
       body: Column(
         children: [

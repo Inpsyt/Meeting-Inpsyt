@@ -9,6 +9,7 @@ import 'package:inpsyt_meeting/constants/const_colors.dart';
 import 'package:inpsyt_meeting/models/model_meetingroom.dart';
 import 'package:inpsyt_meeting/services/service_background_noti.dart';
 import 'package:inpsyt_meeting/views/widgets/widget_buttons.dart';
+import 'package:inpsyt_meeting/views/widgets/widget_labels.dart';
 import 'package:ntp/ntp.dart';
 
 class ScreenStopWatch extends StatefulWidget {
@@ -392,13 +393,10 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
           ),
           Expanded(
               child: Container(
-            child: Center(
-                child: Text(
-              '현재시각 2021.02.01 14:20',
-              style: TextStyle(color: color_deepShadowGrey, fontSize: 19),
-            )),
+            child:Center(child: WidgetCurrentTime())
+
           ))
-        ],
+          ],
       ),
     );
   }

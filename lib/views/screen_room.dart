@@ -3,6 +3,7 @@ import 'package:inpsyt_meeting/constants/const_colors.dart';
 import 'package:inpsyt_meeting/views/screen_timeselect.dart';
 import 'package:inpsyt_meeting/views/widgets/widget_buttons.dart';
 import 'package:inpsyt_meeting/models/model_meetingroom.dart';
+import 'package:inpsyt_meeting/views/widgets/widget_labels.dart';
 
 class ScreenRoom extends StatefulWidget {
   final ModelMeetingRoom modelMeetingRoom;
@@ -173,8 +174,8 @@ class _ScreenRoomState extends State<ScreenRoom> {
 
           Expanded(
               child: Container(
-            child: Center(child: Text('현재시각 2021.02.01 14:20',style: TextStyle(color: color_deepShadowGrey,fontSize: 19),)),
-          ))
+            child: Center(child: WidgetCurrentTime(),)),
+          )
         ],
       ),
     );

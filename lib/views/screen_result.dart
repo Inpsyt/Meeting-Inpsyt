@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:inpsyt_meeting/constants/const_colors.dart';
 import 'package:inpsyt_meeting/models/model_meetingroom.dart';
 import 'package:inpsyt_meeting/views/screen_stopwatch.dart';
+import 'package:inpsyt_meeting/views/widgets/widget_labels.dart';
 
 class ScreenResult extends StatefulWidget {
   final ModelMeetingRoom modelMeetingRoom;
@@ -214,10 +215,7 @@ class _ScreenResultState extends State<ScreenResult> {
           Expanded(
               child: Container(
             child: Center(
-                child: Text(
-              '현재시각 2021.02.01 14:20',
-              style: TextStyle(color: color_deepShadowGrey, fontSize: 19),
-            )),
+                child: WidgetCurrentTime()),
           ))
         ],
       ),

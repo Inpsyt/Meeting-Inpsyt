@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:external_app_launcher/external_app_launcher.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
+import 'package:ntp/ntp.dart';
 import 'package:vibration/vibration.dart';
 
 
@@ -46,7 +47,7 @@ void onStart() {
   }
   );
 
-  Timer.periodic(Duration(seconds: 1), (timer) async {
+  Timer.periodic(Duration(seconds: 2), (timer) async {
     if (!(await service.isServiceRunning())) timer.cancel();
 
 
@@ -62,7 +63,7 @@ void onStart() {
 
 
 
-    leftTime = endTime.difference(DateTime.now()).inMinutes;
+    leftTime = endTime.difference(await NTP.now()).inMinutes;
 
 
 

@@ -6,6 +6,7 @@ import 'package:inpsyt_meeting/models/model_meetingroom.dart';
 import 'package:inpsyt_meeting/services/service_background_noti.dart';
 import 'package:inpsyt_meeting/views/screen_firstAuthen.dart';
 import 'package:inpsyt_meeting/views/screen_result.dart';
+import 'package:inpsyt_meeting/views/widgets/widget_labels.dart';
 import 'package:intl/intl.dart';
 import 'package:ntp/ntp.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -194,10 +195,7 @@ class _ScreenTimeSelectState extends State<ScreenTimeSelect> {
           Expanded(
               child: Container(
             child: Center(
-                child: Text(
-              '현재시각 2021.02.01 14:20',
-              style: TextStyle(color: color_deepShadowGrey, fontSize: 19),
-            )),
+                child:WidgetCurrentTime()),
           ))
         ],
       ),
@@ -267,7 +265,9 @@ class _ScreenTimeSelectState extends State<ScreenTimeSelect> {
     Firestore.instance
         .collection('rooms')
         .document(room.roomNum.toString())
-        .updateData({'isUsing': true});
+        .updateData({'isUsing': true,'time':timeSet,'userNum':_userNum});
+
+    /*
     Firestore.instance
         .collection('rooms')
         .document(room.roomNum.toString())
@@ -275,7 +275,9 @@ class _ScreenTimeSelectState extends State<ScreenTimeSelect> {
     Firestore.instance
         .collection('rooms')
         .document(room.roomNum.toString())
-        .updateData({'userNum': _userNum}); //번호획득 로직 구현 필요
+        .updateData({'userNum': _userNum}); //번
+        호획득 로직 구현 필요
+     */
 
 
     _backgroundStart();
