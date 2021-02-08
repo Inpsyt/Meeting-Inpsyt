@@ -39,7 +39,8 @@ dependencies:
   external_app_launcher: ^0.0.1
 
 
-  flutter_nfc_reader: ^0.1.0
+#  flutter_nfc_reader: ^0.1.0
+  #이놈이 진동을 못하게해...
 
   cupertino_icons: ^1.0.0
   diamond_notched_fab: ^0.0.1

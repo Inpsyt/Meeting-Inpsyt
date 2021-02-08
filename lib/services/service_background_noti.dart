@@ -65,9 +65,6 @@ void onStart() {
 
     leftTime = endTime.difference(await NTP.now()).inMinutes;
 
-
-
-
     //print(roomNum);
 
     service.sendData({
@@ -100,7 +97,7 @@ void onStart() {
 
 
 
-      Vibration.vibrate(duration: 2000);
+      Vibration.vibrate(duration: 1500);
 
 
 

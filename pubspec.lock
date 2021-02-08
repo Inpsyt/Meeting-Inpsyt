@@ -146,13 +146,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.0.1+21"
-  flutter_nfc_reader:
-    dependency: "direct main"
-    description:
-      name: flutter_nfc_reader
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.1.0"
   flutter_test:
     dependency: "direct dev"
     description: flutter

@@ -14,7 +14,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
 import 'package:uni_links/uni_links.dart';
-import 'package:flutter_nfc_reader/flutter_nfc_reader.dart';
+// import 'package:flutter_nfc_reader/flutter_nfc_reader.dart'; //이거때문에 Method Channel 겹쳐서 진동안울려..
 
 class ScreenMeetingRooms extends StatefulWidget {
   @override
@@ -172,7 +172,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
     super.dispose();
   }
 
-  _nfcReaderSet() {
+  _nfcReaderSet() { //nfc플러그인때문에 진동이 안울려..
 
 
     /*
@@ -204,6 +204,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
      */
 
 
+    /*
     FlutterNfcReader.onTagDiscovered().listen((onData) {
       print(onData.id);
       print(onData.content);
@@ -232,6 +233,8 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
 
     });
 
+
+     */
 
   }
 
