@@ -23,13 +23,11 @@ class ScreenStopWatch extends StatefulWidget {
 }
 
 class _ScreenStopWatchState extends State<ScreenStopWatch> {
-  //final ServiceBackgroundNoti serviceBackgroundNoti = ServiceBackgroundNoti();
   Timer _timer;
   final ModelMeetingRoom _modelMeetingRoom;
 
   _ScreenStopWatchState(this._modelMeetingRoom);
 
-  // DateTime endTime
   DateTime currentTime;
 
   //ModelMeetingRoom newRoom; //지금 현재 데이터베이스에 있는 방정보
@@ -55,18 +53,6 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
 
 
  */
-
-  _checkTimeOver() async {
-    //자동 나가기
-
-    //await sleep(Duration(seconds: 1));
-    if (backgroundLeftTime <= 0) {
-     // Vibration.vibrate(duration: 1500);
-      print('시작 경과' + backgroundLeftTime.toString());
-
-     // _checkOutAndPop();
-    }
-  }
 
   _startBackground() async {
 
@@ -101,14 +87,6 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
 
     _startBackground();
 
-    _timer = Timer.periodic(Duration(seconds: 3), (Timer t) {
-      setState(() {
-        if (leftTime <= 0) {
-          t.cancel();
-        }
-        _checkTimeOver();
-      });
-    });
   }
 
   @override
@@ -116,27 +94,13 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
     double deviceHeight = MediaQuery.of(context).size.height;
     double deviceWidth = MediaQuery.of(context).size.width;
 
-    // Vibration.vibrate(duration: 200);
+
     print('stopwatch');
-
-    //  _getDocument(roomNum);
-
-    //endTime = DateTime.parse(newRoom==null?'2222-01-01 00:00':newRoom.time.trim());
 
     currentTime = DateTime.now();
 
-
-    //  _checkTimeOver();
-
     return Scaffold(
-      // floatingActionButton: DiamondNotchedFab(
-      //   onPressed: () {},
-      //   tooltip: 'QR스캔',
-      //   borderRadius: 14,
-      //   child: Padding(
-      //       padding: EdgeInsets.all(13),
-      //       child: Image.asset('assets/images/qricon.png')),
-      // ),
+
       body: Column(
         children: [
           //상단부 영역

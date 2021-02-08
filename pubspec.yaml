@@ -27,17 +27,14 @@ dependencies:
   cloud_firestore: ^0.12.11
   intl: ^0.16.0
   ntp: ^1.0.7
-
   vibration: ^1.7.3
-
-
   shared_preferences: ^0.5.3
   qrscan: ^0.2.22
   permission_handler: ^5.0.1+1
   uni_links: ^0.4.0
   flutter_background_service: ^0.0.1+21
   external_app_launcher: ^0.0.1
-
+  nfc_in_flutter: ^2.0.5
 
 #  flutter_nfc_reader: ^0.1.0
   #이놈이 진동을 못하게해...
