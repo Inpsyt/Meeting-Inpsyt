@@ -9,6 +9,7 @@ import 'package:inpsyt_meeting/views/screen_room.dart';
 import 'package:inpsyt_meeting/views/screen_stopwatch.dart';
 import 'package:diamond_notched_fab/diamond_notched_fab.dart';
 import 'package:inpsyt_meeting/models/model_meetingroom.dart';
+import 'package:nfc_in_flutter/nfc_in_flutter.dart';
 import 'package:ntp/ntp.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -22,6 +23,7 @@ class ScreenMeetingRooms extends StatefulWidget {
 }
 
 class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
+  
   Timer updateTimer;
   List<ModelMeetingRoom> roomList;
   SharedPreferences _preferences;
@@ -44,6 +46,8 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
     _preferences = await SharedPreferences.getInstance();
 
     _userNum = (_preferences.getString('userNum') ?? '');
+
+
 
     if (_userNum == '') {
       final result = await Navigator.push(
@@ -147,11 +151,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
 
     _getCheckUserNumPref();
 
-    //_checkRoomsStatus();
-
     _nfcReaderSet();
-
-
 
      initUniLisks();
 
@@ -172,10 +172,25 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
     super.dispose();
   }
 
-  _nfcReaderSet() { //nfc플러그인때문에 진동이 안울려..
+  _nfcReaderSet() async {
+
+    Stream<NDEFMessage> stream = NFC.readNDEF();
+
+    stream.listen((NDEFMessage message) {
+      print("records: ${message.records.length}");
+      print("record1: ${message.records[0].data.toString()}"); //앱아이디
+      print("record1: ${message.records[1].data.toString()}"); //그 다음 레코드
+    });
 
 
-    /*
+    NDEFMessage message = await NFC.readNDEF(once: true).first;
+    print("payload: ${message.payload}");
+// once: true` only scans one tag!
+
+
+
+
+    /*//nfc플러그인때문에 진동이 안울려..
      FlutterNfcReader.read().then((onData) {
       print(onData.id);
       print(onData.content+'from read');
@@ -243,6 +258,8 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
     print('빌드 새로고침됨');
 
 
+
+    _nfcReaderSet();
 
     // StreamBuilder(
     //   stream: Firestore.instance.collection('rooms').where('userNum',isEqualTo: _userNum).snapshots(),
