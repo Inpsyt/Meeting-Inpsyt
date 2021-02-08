@@ -96,12 +96,12 @@ void onStart() {
           .updateData({'time': 'none', 'isUsing': false, 'userNum': 'none'});
 
 
+      _stopServiceWithCheck(service);
 
       Vibration.vibrate(duration: 1500);
 
 
 
-      _stopServiceWithCheck(service);
 
       // return;
       //timer.cancel();

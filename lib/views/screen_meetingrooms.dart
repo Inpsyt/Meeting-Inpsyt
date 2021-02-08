@@ -84,13 +84,18 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
 
   Future<Null> initUniLisks() async {
     String initialLink;
+    //
+    // getInitialLink().then((value) => {
+    //   print('입력된 URI : '+value.toString()),
+    // _entryRoomWithUni(value.toString())
+    // });
 
     try {
-      initialLink = await  getInitialLink();
-      print(initialLink);
+      initialLink = await getInitialLink();
+      print('입력된 URI '+initialLink);
 
       if (initialLink != null) {
-        _entryRoomWithUni(initialLink);
+
         print(initialLink);
       }
       initialLink = null;
@@ -134,8 +139,10 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
       ds.documents.forEach((element) {
         _youAreUsingNow = true;
       });
-      setState(() {});
+
     });
+
+
 
     setState(() {
 
@@ -153,7 +160,9 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
 
     _nfcReaderSet();
 
-     initUniLisks();
+    initUniLisks();
+
+
 
     CollectionReference reference = Firestore.instance.collection('rooms');
     reference.snapshots().listen((event) {
