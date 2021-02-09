@@ -10,9 +10,11 @@ class WidgetCurrentTime extends StatefulWidget {
 class _WidgetCurrentTimeState extends State<WidgetCurrentTime> {
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
+    return
+      FutureBuilder(
       future: NTP.now(),
       builder: (context,snapshot){
+
         if(!snapshot.hasData)
           return Text('네트워크 접속 없음',style: TextStyle(color: color_dark,fontSize: 19),);
         else if(snapshot.hasError){

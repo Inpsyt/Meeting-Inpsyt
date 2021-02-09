@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_native_timezone/flutter_native_timezone.dart';
 import 'package:inpsyt_meeting/constants/const_colors.dart';
 import 'package:inpsyt_meeting/views/screen_firstAuthen.dart';
 import 'package:inpsyt_meeting/views/screen_room.dart';
@@ -15,6 +16,7 @@ import 'package:ntp/ntp.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
+import 'package:timezone/timezone.dart';
 import 'package:uni_links/uni_links.dart';
 // import 'package:flutter_nfc_reader/flutter_nfc_reader.dart'; //이거때문에 Method Channel 겹쳐서 진동안울려..
 
@@ -24,7 +26,8 @@ class ScreenMeetingRooms extends StatefulWidget {
 }
 
 class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
-  
+
+  final Firestore db = Firestore.instance;
   Timer updateTimer;
   List<ModelMeetingRoom> roomList;
   SharedPreferences _preferences;
@@ -108,35 +111,36 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
    // DateTime curTime = DateTime.now();
 
     DateTime curTime = await NTP.now(); //네트워크 시간에 맡기기
-    print('네트워크시간 NTP : '+curTime.toString());
+    print('ScreenMeetingRooms : 네트워크시간 감지됨 NTP : '+curTime.toString());
 
 
-    await Firestore.instance //판별을 위해 서버 접속
+    await db //판별을 위해 서버 접속
         .collection('rooms')
         .where('isUsing', isEqualTo: true)
         .getDocuments()
         .then((QuerySnapshot ds) { //문서를 가져오면 이하 내용 실행
       ds.documents.forEach((element) {
 
-        print('사용중인게 있다!!! 이게 뜬다라는 것은 서버에 접속된거겠지');
+        print('ScreenMeetingRooms : 사용중인 방이 있다!!! (체크된 방의 개수만큼 뜨는 부분)');
         print(element['time'].toString());
         DateTime time = DateTime.parse(element['time'].toString());
         if(curTime.difference(time).inMinutes>0){ //시간이 지났다면 체크아웃 상태로 업데이트
-         Firestore.instance.collection('rooms').document(element['roomNum'].toString()).updateData({'isUsing':false,'time':'none','userNum':'none'});
+         db.collection('rooms').document(element['roomNum'].toString()).updateData({'isUsing':false,'time':'none','userNum':'none'});
         }
       });
 
     });
 
-    //Firestore.instance.collection('rooms').where('userNum',isEqualTo: _userNum).sna
 
-    await Firestore.instance
+
+    await db
         .collection('rooms')
         .where('userNum', isEqualTo: _userNum)
         .getDocuments()
         .then((QuerySnapshot ds) {
       _youAreUsingNow = false;
       ds.documents.forEach((element) {
+        print('ScreenMeetingRooms : 내가 사용중인 방이 있다! (체크된 방의 개수만큼 뜨는 부분)');
         _youAreUsingNow = true;
       });
 
@@ -164,11 +168,11 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
 
 
 
-    CollectionReference reference = Firestore.instance.collection('rooms');
-    reference.snapshots().listen((event) {
-      print('문서바꼇당');
-      _checkRoomsStatus();
 
+    CollectionReference reference = db.collection('rooms');
+    reference.snapshots().listen((event) {
+      print('ScreenMeetingRooms: 문서바꼇당 서버접속 2회');
+      _checkRoomsStatus();
     });
 
 
@@ -264,7 +268,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
 
   @override
   Widget build(BuildContext context) {
-    print('빌드 새로고침됨');
+    print('ScreenMeetingRooms: 빌드 새로고침됨');
 
 
 
@@ -305,6 +309,21 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
 
     //데이터바 바뀔때마다 반응함
 
+    getOffeset() {
+
+
+
+
+      DateTime now = DateTime.now();
+       now.add(Duration(days: 10));
+
+       now.
+
+      print(now);
+
+
+
+    }
 
 
 
@@ -314,7 +333,9 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
 
       floatingActionButton: DiamondNotchedFab(
         onPressed: () {
-          _scan();
+          //_scan();
+
+          getOffeset();
         },
         tooltip: 'QR스캔',
         borderRadius: 14,
@@ -371,7 +392,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
             ),
           ),
           StreamBuilder<QuerySnapshot>(
-            stream: Firestore.instance
+            stream: db
                 .collection('rooms')
                 .orderBy('roomNum')
                 .snapshots(),
@@ -490,7 +511,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
     ModelMeetingRoom room;
     String parsed = uri.substring(uri.length - 1, uri.length);
     print(parsed);
-    Firestore.instance
+    db
         .collection('rooms')
         .document(parsed)
         .get()

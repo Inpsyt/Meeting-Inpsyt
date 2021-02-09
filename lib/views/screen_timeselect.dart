@@ -22,7 +22,7 @@ class ScreenTimeSelect extends StatefulWidget {
 }
 
 class _ScreenTimeSelectState extends State<ScreenTimeSelect> {
-  final ModelMeetingRoom modelMeetingRoom;
+  ModelMeetingRoom modelMeetingRoom;
   SharedPreferences _preferences;
   String _userNum = '';
 
@@ -52,13 +52,13 @@ class _ScreenTimeSelectState extends State<ScreenTimeSelect> {
     });
   }
 
-  _setCurrentTime() async{
+  _setCurrentTime() async {
     curTime = DateTime.now();
 
     curTime = await NTP.now();
 
-  }
 
+  }
 
   @override
   void initState() {
@@ -66,7 +66,6 @@ class _ScreenTimeSelectState extends State<ScreenTimeSelect> {
     super.initState();
     _getCheckUserNumPref();
     _setCurrentTime();
-
   }
 
   _backgroundStart() async {
@@ -194,8 +193,7 @@ class _ScreenTimeSelectState extends State<ScreenTimeSelect> {
 
           Expanded(
               child: Container(
-            child: Center(
-                child:WidgetCurrentTime()),
+            child: Center(child: WidgetCurrentTime()),
           ))
         ],
       ),
@@ -209,7 +207,7 @@ class _ScreenTimeSelectState extends State<ScreenTimeSelect> {
       minWidth: 200,
       child: RaisedButton(
         onPressed: () {
-          _documentUsingSet(modelMeetingRoom, _addConvertedTime(selectedTime));
+          _documentUsingSet(_addConvertedTime(selectedTime));
           _navigateResultScreen(modelMeetingRoom, 0);
         },
         color: color_lightBlue,
@@ -246,41 +244,35 @@ class _ScreenTimeSelectState extends State<ScreenTimeSelect> {
   }
 
   _addConvertedTime(String increaseTime) {
-   // DateTime time = DateTime.now();
+    // DateTime time = DateTime.now();
 
-
-    print('네트워크시간 NTP : '+curTime.toString());
+    print('네트워크시간 NTP : ' + curTime.toString());
 
     if (increaseTime.trim() == '하루종일') {
-      curTime = new DateTime(curTime.year, curTime.month, curTime.day, 21, 0, 0, 0, 0);
-      return DateFormat('yyyy-MM-dd HH:mm').format(curTime);
+      return DateFormat('yyyy-MM-dd HH:mm').format(new DateTime(
+          curTime.year, curTime.month, curTime.day, 21, 0, 0, 0, 0));
     }
 
-    curTime = curTime.add(Duration(minutes: int.parse(increaseTime)));
-    return DateFormat('yyyy-MM-dd HH:mm').format(curTime);
+    return DateFormat('yyyy-MM-dd HH:mm')
+        .format(curTime.add(Duration(minutes: int.parse(increaseTime))));
   }
 
-  _documentUsingSet(ModelMeetingRoom room, String timeSet) {
+  _documentUsingSet(String timeSet) {
     //room은 정보제공용, 그 우측으로는 모두 수정할 사항들 기입
     Firestore.instance
         .collection('rooms')
-        .document(room.roomNum.toString())
-        .updateData({'isUsing': true,'time':timeSet,'userNum':_userNum});
+        .document(modelMeetingRoom.roomNum.toString())
+        .updateData({'isUsing': true, 'time': timeSet, 'userNum': _userNum});
 
-    /*
-    Firestore.instance
-        .collection('rooms')
-        .document(room.roomNum.toString())
-        .updateData({'time': timeSet});
-    Firestore.instance
-        .collection('rooms')
-        .document(room.roomNum.toString())
-        .updateData({'userNum': _userNum}); //번
-        호획득 로직 구현 필요
-     */
 
+    //시간만 새로고침
+    modelMeetingRoom = new ModelMeetingRoom(
+        roomName: modelMeetingRoom.roomName,
+        roomNum: modelMeetingRoom.roomNum,
+        time: timeSet,
+        isUsing: modelMeetingRoom.isUsing,
+        userNum: modelMeetingRoom.userNum);
 
     _backgroundStart();
   }
-
 }

@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:inpsyt_meeting/constants/const_colors.dart';
 import 'package:inpsyt_meeting/models/model_meetingroom.dart';
@@ -23,32 +22,7 @@ class _ScreenResultState extends State<ScreenResult> {
 
   _ScreenResultState(this.modelMeetingRoom, this.resultMode);
 
-  /*
-  getDocument(ModelMeetingRoom room) async {
-    //파이어스토어로부터 지정된 문서를 받아옴
-    DocumentSnapshot doc = await Firestore.instance
-        .collection('rooms')
-        .document(room.roomNum.toString())
-        .get();
-    newRoom = await new ModelMeetingRoom(
-        roomNum: doc.data['roomNum'],
-        roomName: doc.data['roomName'],
-        time: doc.data['time'],
-        isUsing: doc.data['isUsing'],
-        userNum: doc.data['userNum']);
 
-    print(newRoom.roomName);
-
-    if(newRoom.roomNum == null){
-      setState(() {
-
-      });
-    }
-
-  }
-
-
-   */
   @override
   Widget build(BuildContext context) {
     final double deviceHeight = MediaQuery.of(context).size.height;
@@ -143,18 +117,7 @@ class _ScreenResultState extends State<ScreenResult> {
             ),
 
             //컨테이너 내부 영역
-            child: StreamBuilder(
-              stream: Firestore.instance
-                  .collection('rooms')
-                  .document(modelMeetingRoom.roomNum.toString())
-                  .snapshots(),
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return CircularProgressIndicator();
-                }
-
-                final data = snapshot.data;
-                return Column(
+            child:  Column(
                   mainAxisSize: MainAxisSize.max,
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
@@ -167,7 +130,7 @@ class _ScreenResultState extends State<ScreenResult> {
                           fontWeight: FontWeight.bold),
                     ),
                     Text(
-                      _getTimeResult(resultMode, data['time']),
+                      _getTimeResult(resultMode,modelMeetingRoom.time),
                       textAlign: TextAlign.center,
                       style: TextStyle(
                           color: color_dark,
@@ -207,10 +170,10 @@ class _ScreenResultState extends State<ScreenResult> {
                     //       fontWeight: FontWeight.normal),
                     // ),
                   ],
-                );
-              },
+                )
+
             ),
-          ),
+
 
           Expanded(
               child: Container(
