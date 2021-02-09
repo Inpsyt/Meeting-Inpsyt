@@ -1,5 +1,6 @@
 import 'dart:async';
 
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -46,7 +47,6 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
     _preferences = await SharedPreferences.getInstance();
 
     _userNum = (_preferences.getString('userNum') ?? '');
-
 
 
     if (_userNum == '') {
@@ -473,7 +473,6 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
       );
         _nowInRoom = false;
     } else {
-
       if(_youAreUsingNow)return;
       //이미 회의중이라면 예약조차 몬하게
         await Navigator.of(context).push(
@@ -481,15 +480,12 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
           builder: (BuildContext context) => new ScreenRoom(room),
         ),
       );
-
       _nowInRoom = false;
     }
 
   }
 
   _entryRoomWithUni(String uri) {
-
-
 
     ModelMeetingRoom room;
     String parsed = uri.substring(uri.length - 1, uri.length);
@@ -506,11 +502,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
                   isUsing: value['isUsing'],
                   userNum: value['userNum']),
 
-
-
         _entryRoom(room)
-      
-
             });
   }
 }
