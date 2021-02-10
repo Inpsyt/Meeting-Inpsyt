@@ -84,25 +84,32 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
   }
 
 
+  StreamSubscription _sub;
 
   Future<Null> initUniLisks() async {
+
+
     String initialLink;
-    //
-    // getInitialLink().then((value) => {
-    //   print('입력된 URI : '+value.toString()),
-    // _entryRoomWithUni(value.toString())
-    // });
 
     try {
       initialLink = await getInitialLink();
-      print('입력된 URI '+initialLink);
 
       if (initialLink != null) {
-
-        print(initialLink);
+        _entryRoomWithUni(initialLink);
       }
       initialLink = null;
     } on PlatformException {}
+
+
+
+    _sub = getLinksStream().listen((event) {
+      print('UNI 링크유입'+event);
+      _entryRoomWithUni(event.trim());
+    });
+
+
+
+
   }
 
 
@@ -440,6 +447,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
           _nowInRoom = false;
 
           _getCheckUserNumPref();
+
           _entryRoom(room);
 
         },
@@ -474,16 +482,28 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
     );
   }
 
+  //방에있는 실제 물리적인 형태로 접근을 하는 것이니 강제로 입장!
+  _entryRoomForce(ModelMeetingRoom room) async{
+    _nowInRoom = true;
+    if (_userNum == '') return; //번호 입력 안하고 백키 누를 경우를 대비해 그냥 실행 방지
+    if (room.isUsing && (room.userNum.trim() == _userNum)) {
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (BuildContext context) => new ScreenStopWatch(room),
+        ),
+      );
+      _nowInRoom = false;
+    } else {
 
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (BuildContext context) => new ScreenRoom(room),
+        ),
+      );
+      _nowInRoom = false;
+    }
+  }
   _entryRoom(ModelMeetingRoom room)async{
-
-
-/*
-    if (_youAreUsingNow && room.userNum != _userNum) {
-      return;
-    } //현재 내가 어떤 방에 들어있을땐 다른방에 못들어가도록
-
-*/
 
   _nowInRoom = true;
     if (_userNum == '') return; //번호 입력 안하고 백키 누를 경우를 대비해 그냥 실행 방지
@@ -507,6 +527,8 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
 
   }
 
+
+
   _entryRoomWithUni(String uri) {
 
     ModelMeetingRoom room;
@@ -524,7 +546,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
                   isUsing: value['isUsing'],
                   userNum: value['userNum']),
 
-        _entryRoom(room)
+        _entryRoomForce(room)//방에있는 실제 물리적인 형태로 접근을 하는 것이니 강제로 입장!
             });
   }
 }
