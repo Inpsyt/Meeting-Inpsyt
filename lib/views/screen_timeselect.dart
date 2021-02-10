@@ -53,9 +53,12 @@ class _ScreenTimeSelectState extends State<ScreenTimeSelect> {
   }
 
   _setCurrentTime() async {
+
+
     curTime = DateTime.now();
 
-    curTime = await NTP.now();
+    //실제 네트워크상 실제 표준시간을 가져와 UTC로 변환하고 9시간을 더해 한국화... 휴대폰 국적이 바뀌어도 시간은 동일
+    curTime = (await NTP.now()).toUtc().add(Duration(hours: 9));
 
 
   }

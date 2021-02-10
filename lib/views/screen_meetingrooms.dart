@@ -309,23 +309,24 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
 
     //데이터바 바뀔때마다 반응함
 
-    getOffeset() {
+    getOffeset() async {
 
-
-
-
+      /*
+      int timeOffset = await NTP.getNtpOffset();
       DateTime now = DateTime.now();
-       now.add(Duration(days: 10));
-
-       now.
-
-      print(now);
+      //now = now.add(Duration(days: 10));
 
 
+      print('화면상시간:${now.toString()}');
+      print(timeOffset.toString());
+
+       */
+      DateTime currentTime = (await NTP.now()).toUtc().add(Duration(hours: 9));
+      //실제 네트워크상 실제 표준시간을 가져와 UTC로 변환하고 9시간을 더해 한국화... 휴대폰 국적이 바뀌어도 시간은 동일
+
+      print(currentTime.toString());
 
     }
-
-
 
 
     return Scaffold(

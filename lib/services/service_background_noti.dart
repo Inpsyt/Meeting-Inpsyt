@@ -13,7 +13,8 @@ void onStart() {
   final service = FlutterBackgroundService();
 
 
-  DateTime endTime;
+  DateTime currentTime =null;
+  DateTime endTime = null;
   int leftTime;
   String roomNum;
 
@@ -43,27 +44,41 @@ void onStart() {
 
 
   Firestore.instance.collection('rooms').document(roomNum).get().then((value) => {
-  endTime = DateTime.parse(value['time'].toString().trim())
+    endTime = DateTime.parse(value['time'].toString().trim())
+  });
+
+  NTP.now().then((value) =>{
+    //실제 네트워크상 실제 표준시간을 가져와 UTC로 변환하고 9시간을 더해 한국화... 휴대폰 국적이 바뀌어도 시간은 동일
+    currentTime = DateTime.parse(value.toUtc().add(Duration(hours: 9)).toString().substring(0,22))
   }
   );
 
-  Timer.periodic(Duration(milliseconds: 500), (timer) async {
+
+  int countDonwDuration = 500;
+  int notWorkingCount = 20;
+
+
+  Timer.periodic(Duration(milliseconds:countDonwDuration), (timer) async {
     if (!(await service.isServiceRunning())) timer.cancel();
 
 
-    // Firestore.instance
-    //     .collection('rooms')
-    //     .document(roomNum)
-    //     .get()
-    //     .then((value) => {
-    //           leftTime = DateTime.parse(value['time'].toString().trim())
-    //               .difference(DateTime.now())
-    //               .inMinutes,
-    //         });
+    //서버 접속 10회 미 응답시 조치
+    if(currentTime == null || endTime == null ){
+      notWorkingCount--;
+      if(notWorkingCount <=0){
+        _stopServiceWithCheck(service);
+      }
+    }else{
+      notWorkingCount =20;
+    }
 
+    print('ServiceNoti: ==================================================='+notWorkingCount.toString());
 
+    currentTime = currentTime.add(Duration(milliseconds: countDonwDuration));
+    print('ServiceNoti: current: '+currentTime.toString());
+    print('ServiceNoti: endTime: '+endTime.toString());
+    leftTime = endTime.difference(currentTime).inMinutes;
 
-    leftTime = endTime.difference(await NTP.now()).inMinutes;
 
     //print(roomNum);
 
@@ -82,7 +97,7 @@ void onStart() {
 
 
 
-      _runApp();
+    //  _runApp();
 
 
       service.sendData({
@@ -100,6 +115,13 @@ void onStart() {
 
       Vibration.vibrate(duration: 1500);
 
+      await LaunchApp.openApp(
+        androidPackageName: 'com.kkumsoft.inpsyt_meeting',
+        iosUrlScheme: 'pulsesecure://',
+        appStoreLink:
+        'itms-apps://itunes.apple.com/us/app/pulse-secure/id945832041',
+        // openStore: false
+      );
 
 
 
@@ -123,13 +145,7 @@ void _stopServiceWithCheck(FlutterBackgroundService service) async{
 
 void _runApp() async {
 
-  await LaunchApp.openApp(
-    androidPackageName: 'com.kkumsoft.inpsyt_meeting',
-    iosUrlScheme: 'pulsesecure://',
-    appStoreLink:
-    'itms-apps://itunes.apple.com/us/app/pulse-secure/id945832041',
-    // openStore: false
-  );
+
 
 
   // Enter thr package name of the App you want to open and for iOS add the URLscheme to the Info.plist file.
