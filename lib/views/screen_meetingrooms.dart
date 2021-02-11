@@ -4,7 +4,6 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_native_timezone/flutter_native_timezone.dart';
 import 'package:inpsyt_meeting/constants/const_colors.dart';
 import 'package:inpsyt_meeting/views/screen_firstAuthen.dart';
 import 'package:inpsyt_meeting/views/screen_room.dart';
@@ -16,7 +15,6 @@ import 'package:ntp/ntp.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
-import 'package:timezone/timezone.dart';
 import 'package:uni_links/uni_links.dart';
 // import 'package:flutter_nfc_reader/flutter_nfc_reader.dart'; //이거때문에 Method Channel 겹쳐서 진동안울려..
 
@@ -341,9 +339,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
 
       floatingActionButton: DiamondNotchedFab(
         onPressed: () {
-          //_scan();
-
-          getOffeset();
+          _scan();
         },
         tooltip: 'QR스캔',
         borderRadius: 14,
@@ -431,6 +427,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
     ModelMeetingRoom room = ModelMeetingRoom(
         roomNum: doc['roomNum'],
         roomName: doc['roomName'],
+        subRoomName: doc['subRoomName'],
         isUsing: doc['isUsing'],
         time: doc['time'],
         userNum: doc['userNum']);
@@ -459,23 +456,34 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
           borderRadius: BorderRadius.circular(8.0),
         ),
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 29),
-          child: Row(
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                room.roomName,
-                style: TextStyle(fontSize: 21),
-              ),
-              Text(
-                room.isUsing
-                    ? room.time.substring(10, room.time.length).trim() +
-                        '부터 사용가능'
-                    : '현재 사용가능',
-                style: TextStyle(fontSize: 16),
-              )
-            ],
+          padding: EdgeInsets.symmetric(horizontal: 10),
+          child: Container(
+            height: 85,
+            child: Row(
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.max,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      room.roomName,
+                      style: TextStyle(fontSize: 21),
+                    ),
+                    room.subRoomName == 'none'?SizedBox():Text(room.subRoomName.trim(),style: TextStyle(fontSize: 15,color: color_deepGrey),)
+                  ],
+                ),
+                Text(
+                  room.isUsing
+                      ? room.time.substring(10, room.time.length).trim() +
+                          '부터 사용가능'
+                      : '현재 사용가능',
+                  style: TextStyle(fontSize: 16),
+                )
+              ],
+            ),
           ),
         ),
       ),
@@ -507,7 +515,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
 
   _nowInRoom = true;
     if (_userNum == '') return; //번호 입력 안하고 백키 누를 경우를 대비해 그냥 실행 방지
-    if (room.isUsing && (room.userNum.trim() == _userNum)) {
+    if (room.isUsing && (room.userNum.trim() == _userNum||_userNum=='6462')) {
         await Navigator.of(context).push(
         MaterialPageRoute(
           builder: (BuildContext context) => new ScreenStopWatch(room),

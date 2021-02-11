@@ -46,13 +46,18 @@ class _ScreenFistAuthenState extends State<ScreenFistAuthen> {
   }
 
 
-  _saveUserPref(){
-    setState(() {
-      userNum = controller.text.trim();
+
+  _saveUserPref() async {
+
+    userNum = controller.text.trim();
+    if(userNum.length<4){
+
+      return;
+    }
+
       _preferences.setString('userNum', userNum);
       _loadUserPref();
 
-    });
   }
 
 

@@ -10,6 +10,7 @@ final Color color_yellow = Color(0xFFFFFF00);
 final Color color_lightGrey = Colors.white60;
 final Color color_shadowGrey = Color(0x99b8b8b8);
 final Color color_deepShadowGrey = Colors.grey;
+final Color color_deepGrey = Color(0xFF777777);
 
 
 

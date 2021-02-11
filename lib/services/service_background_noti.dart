@@ -62,7 +62,7 @@ void onStart() {
         _stopServiceWithCheck(service);
       }
     } else {
-      notWorkingCount = 20;
+      notWorkingCount = 10;
     }
 
     print('ServiceNoti: ===================================================' +
