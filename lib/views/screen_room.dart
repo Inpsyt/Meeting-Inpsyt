@@ -184,7 +184,7 @@ class _ScreenRoomState extends State<ScreenRoom> {
 
   _navigateTimeSelect(BuildContext context, ModelMeetingRoom roomModel) async{
 
-    final result = await Navigator.push(context,
+    final result = await Navigator.pushReplacement(context,
         PageRouteBuilder(pageBuilder: (context,b,c)=>ScreenTimeSelect(roomModel),transitionDuration: Duration(seconds: 0)),
     );
 

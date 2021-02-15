@@ -169,7 +169,7 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
           //하단부 영역
           Container(
             width: deviceWidth / 1.1,
-            height: deviceHeight / 1.9,
+            height: deviceHeight / 1.5,
             decoration: BoxDecoration(
               color: color_white,
               boxShadow: [
@@ -225,6 +225,31 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
                       child: Image.asset('assets/images/anime.gif'),
                       height: 100,
                     ),
+
+                    /*
+                    GradientButton(
+                        Column(
+                          children: [
+                            Text(
+                              '시간연장',
+                              style: TextStyle(
+                                  color: color_white,
+                                  fontSize: 25,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                        color_gradientBlueStart,
+                        color_gradientBlueEnd,
+                        60,
+                        deviceWidth / 1.3,
+                        10, () {
+                      _checkOutAndPop();
+                    }),
+
+
+                     */
+
                     GradientButton(
                         Column(
                           children: [

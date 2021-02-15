@@ -228,7 +228,7 @@ class _ScreenResultState extends State<ScreenResult> {
   }
 
   _navigateStopWatch() async {
-    await Navigator.push(
+    await Navigator.pushReplacement(
         context,
         MaterialPageRoute(
             builder: (BuildContext context) =>

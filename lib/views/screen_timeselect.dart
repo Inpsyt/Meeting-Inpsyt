@@ -236,7 +236,7 @@ class _ScreenTimeSelectState extends State<ScreenTimeSelect> {
             builder: (BuildContext context) => ScreenResult(room, resultMode)));
 
      */
-    final result = await Navigator.push(
+    final result = await Navigator.pushReplacement(
       context,
       PageRouteBuilder(
           pageBuilder: (context, b, c) => ScreenResult(room, resultMode),
