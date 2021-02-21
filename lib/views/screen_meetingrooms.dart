@@ -43,6 +43,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
     '0x04c88022422b80'
   ];
 
+
   _getCheckUserNumPref() async {
     _preferences = await SharedPreferences.getInstance();
 
@@ -64,6 +65,8 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
       //화면의 사용자: 이부분에 번호가 안뜨므로 async가 끝나는대로 화면 새로그리기함
     });
   }
+
+
 
   //플레이스토어 업로드시 카메라 권한 문제 때문에 보류
 
@@ -533,6 +536,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
   }
 
 
+  /*
   _navigatePreferences()  {
 
      Navigator.push(context,
@@ -543,4 +547,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
      });
 
   }
+
+
+   */
 }
