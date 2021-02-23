@@ -1,22 +1,26 @@
 import 'dart:async';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';  //cfs
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:inpsyt_meeting/constants/const_colors.dart';
+import 'package:inpsyt_meeting/services/service_background_noti.dart';
+
 import 'package:inpsyt_meeting/views/screen_firstAuthen.dart';
-import 'package:inpsyt_meeting/views/screen_preferences.dart';
 import 'package:inpsyt_meeting/views/screen_room.dart';
-import 'package:inpsyt_meeting/views/screen_stopwatch.dart';
+
 import 'package:diamond_notched_fab/diamond_notched_fab.dart';
 import 'package:inpsyt_meeting/models/model_meetingroom.dart';
-import 'package:nfc_in_flutter/nfc_in_flutter.dart';
-import 'package:ntp/ntp.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:inpsyt_meeting/views/screen_stopwatch.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:qrscan/qrscan.dart' as scanner;
-import 'package:uni_links/uni_links.dart';
-// import 'package:flutter_nfc_reader/flutter_nfc_reader.dart'; //이거때문에 Method Channel 겹쳐서 진동안울려..
+
+//import 'package:nfc_in_flutter/nfc_in_flutter.dart';
+import 'package:ntp/ntp.dart';
+//import 'package:permission_handler/permission_handler.dart';
+//import 'package:qrscan/qrscan.dart' as scanner;
+//import 'package:uni_links/uni_links.dart';
 
 class ScreenMeetingRooms extends StatefulWidget {
   @override
@@ -24,7 +28,7 @@ class ScreenMeetingRooms extends StatefulWidget {
 }
 
 class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
-  final Firestore db = Firestore.instance;
+  final Firestore db = Firestore.instance; //cfs
   Timer updateTimer;
   List<ModelMeetingRoom> roomList;
   SharedPreferences _preferences;
@@ -67,9 +71,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
   }
 
 
-
-  //플레이스토어 업로드시 카메라 권한 문제 때문에 보류
-
+  /*
   Future _scan() async {
     await Permission.camera.request();
     //스캔 시작 - 이때 스캔 될때까지 blocking
@@ -83,10 +85,13 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
   }
 
 
+   */
+
 
 
   StreamSubscription _sub;
 
+  /*
   Future<Null> initUniLisks() async {
     String initialLink;
 
@@ -104,6 +109,10 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
       _entryRoomWithUni(event.trim());
     });
   }
+
+   */
+
+
 
   _checkRoomsStatus() async {
     //사용중인 방이 시간이 지났는지 아닌지를 판별
@@ -148,22 +157,32 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
     setState(() {});
   }
 
+  _startBackground()async {
+
+    await FlutterBackgroundService.initialize(onStart,foreground: false);
+  }
+
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
 
     _getCheckUserNumPref();
+    _startBackground();
 
-    _nfcReaderSet();
+    //_nfcReaderSet();
 
-    initUniLisks();
+    //initUniLisks();
 
+    // cfs
     CollectionReference reference = db.collection('rooms');
     reference.snapshots().listen((event) {
       print('ScreenMeetingRooms: 문서바꼇당 서버접속 2회');
       _checkRoomsStatus();
     });
+
+
   }
 
   @override
@@ -173,6 +192,8 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
     super.dispose();
   }
 
+
+  /*
   _nfcReaderSet() async {
     Stream<NDEFMessage> stream = NFC.readNDEF();
 
@@ -184,127 +205,24 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
 
     NDEFMessage message = await NFC.readNDEF(once: true).first;
     print("payload: ${message.payload}");
-// once: true` only scans one tag!
 
-    /*//nfc플러그인때문에 진동이 안울려..
-     FlutterNfcReader.read().then((onData) {
-      print(onData.id);
-      print(onData.content+'from read');
-
-
-      if(_nowInRoom){
-        return;
-      }
-
-
-
-      if(onData.id == nfcRoomInfo[1]){
-        _entryRoomWithUni('room=1');
-      }else if(onData.id == nfcRoomInfo[2]){
-        _entryRoomWithUni('room=2');
-      }else if(onData.id == nfcRoomInfo[3]){
-        _entryRoomWithUni('room=3');
-      }else if(onData.id == nfcRoomInfo[5]){
-        _entryRoomWithUni('room=4');
-      }
-
-
-    });
-
-
-     */
-
-    /*
-    FlutterNfcReader.onTagDiscovered().listen((onData) {
-      print(onData.id);
-      print(onData.content);
-
-
-      if(_nowInRoom){
-        return;
-      }
-      _nowInRoom = true;
-
-
-      if(onData.id == nfcRoomInfo[1]){
-        _entryRoomWithUni('room=1');
-      }else if(onData.id == nfcRoomInfo[2]){
-        _entryRoomWithUni('room=2');
-      }else if(onData.id == nfcRoomInfo[3]){
-        _entryRoomWithUni('room=3');
-      }else if(onData.id == nfcRoomInfo[4]){
-        _entryRoomWithUni('room=4');
-      }
-      else if(onData.id == nfcRoomInfo[5]){
-        _entryRoomWithUni('room=4');
-      }
-
-
-
-    });
-
-
-     */
   }
+
+   */
 
   @override
   Widget build(BuildContext context) {
     print('ScreenMeetingRooms: 빌드 새로고침됨');
 
-    _nfcReaderSet();
+    //_nfcReaderSet();
 
-    // StreamBuilder(
-    //   stream: Firestore.instance.collection('rooms').where('userNum',isEqualTo: _userNum).snapshots(),
-    //   builder: (context,snapshot){
-    //
-    //     if(!snapshot.hasData){
-    //       setState(() {
-    //         print('나 없지롱');
-    //         _youAreUsingNow = false;
-    //       });
-    //       return null;
-    //     }
-    //
-    //     setState(() {
-    //       print('나 있지롱');
-    //       _youAreUsingNow=true;
-    //     });
-    //     return null;
-    //
-    //   },
-    // );
-
-    // initState();
-
-    // initUniLisks();
-
-    //_checkRoomsStatus();
-
-    //데이터바 바뀔때마다 반응함
-
-    getOffeset() async {
-      /*
-      int timeOffset = await NTP.getNtpOffset();
-      DateTime now = DateTime.now();
-      //now = now.add(Duration(days: 10));
-
-
-      print('화면상시간:${now.toString()}');
-      print(timeOffset.toString());
-
-       */
-      DateTime currentTime = (await NTP.now()).toUtc().add(Duration(hours: 9));
-      //실제 네트워크상 실제 표준시간을 가져와 UTC로 변환하고 9시간을 더해 한국화... 휴대폰 국적이 바뀌어도 시간은 동일
-
-      print(currentTime.toString());
-    }
 
     return Scaffold(
 
       floatingActionButton:
       DiamondNotchedFab(
         onPressed: () {
-          _scan();
+         // _scan();
         },
         tooltip: 'QR스캔',
         borderRadius: 14,
@@ -319,7 +237,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
         children: [
           Container(
             //상단부 영역
-            height: 130,
+            height: 120,
             decoration: BoxDecoration(
               boxShadow: [
                 BoxShadow(
@@ -336,13 +254,12 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
                     '이 자리에서\n회의실을 예약하세요',
                     style: TextStyle(
                         color: color_white,
-                        fontSize: 25,
+                        fontSize: 22,
                         fontWeight: FontWeight.bold),
                   ),
-                  bottom: 20,
+                  bottom: 15,
                   left: 15,
                 ),
-
 
                 /*
                 //설정버튼
@@ -359,10 +276,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
                   right: 14,
                   bottom: 22,
                 )
-
                  */
-
-
 
                 /* //사용자번호 확인용
                 Positioned(
@@ -382,6 +296,9 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
             ),
           ),
 
+
+
+
           //하단부 리스트 영역
           StreamBuilder<QuerySnapshot>(
             stream: db.collection('rooms').orderBy('roomNum').snapshots(),
@@ -392,6 +309,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
               final documents = snapshot.data.documents;
               return Expanded(
                 child: ListView.builder(
+                  physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
                     itemCount: documents.length,
                     itemBuilder: (context, index) {
                       final doc = documents[index];
@@ -401,10 +319,18 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
               );
             },
           )
+
+          //cfs
+
+
+
+
+
         ],
       ),
     );
   }
+
 
   //회의실 아이템
   Widget _MeetingRoomItem(DocumentSnapshot doc) {
@@ -475,14 +401,22 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
     );
   }
 
+  //cfs
+
+
+
+
+
   //방에있는 실제 물리적인 형태로 접근을 하는 것이니 강제로 입장!
+
+
   _entryRoomForce(ModelMeetingRoom room) async {
     _nowInRoom = true;
     if (_userNum == '') return; //번호 입력 안하고 백키 누를 경우를 대비해 그냥 실행 방지
     if (room.isUsing && (room.userNum.trim() == _userNum)) {
       await Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (BuildContext context) => new ScreenStopWatch(room),
+          builder: (BuildContext context) => new ScreenStopWatch(room)//new ScreenStopWatch(room),
         ),
       );
       _nowInRoom = false;
@@ -500,10 +434,10 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
     _nowInRoom = true;
     if (_userNum == '') return; //번호 입력 안하고 백키 누를 경우를 대비해 그냥 실행 방지
     if (room.isUsing &&
-        (room.userNum.trim() == _userNum || _userNum == '6462')) {
+        (room.userNum.trim() == _userNum || _userNum == '현장기기')) {
       await Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (BuildContext context) => new ScreenStopWatch(room),
+          builder: (BuildContext context) => new ScreenStopWatch(room)//new ScreenStopWatch(room),
         ),
       );
       _nowInRoom = false;
@@ -518,6 +452,8 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
       _nowInRoom = false;
     }
   }
+
+
 
   _entryRoomWithUni(String uri) {
     ModelMeetingRoom room;
@@ -536,6 +472,8 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
   }
 
 
+
+
   /*
   _navigatePreferences()  {
 
@@ -547,7 +485,5 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
      });
 
   }
-
-
    */
 }

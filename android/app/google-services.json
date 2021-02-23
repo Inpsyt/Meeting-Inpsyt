@@ -29,6 +29,13 @@
             {
               "client_id": "895772697814-qjq28kvkl1m51mculs29u5n9kve79rab.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "895772697814-hfs9k8tas64ni51mtjim87i7102aa9bt.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.kkumsoft.inpsytMeeting"
+              }
             }
           ]
         }
