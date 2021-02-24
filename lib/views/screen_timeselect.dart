@@ -4,12 +4,14 @@ import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:inpsyt_meeting/constants/const_colors.dart';
 import 'package:inpsyt_meeting/models/model_meetingroom.dart';
 import 'package:inpsyt_meeting/services/service_background_noti.dart';
-import 'package:inpsyt_meeting/views/screen_firstAuthen.dart';
 import 'package:inpsyt_meeting/views/screen_result.dart';
+import 'package:inpsyt_meeting/views/screen_firstAuthen.dart';
 import 'package:inpsyt_meeting/views/widgets/widget_labels.dart';
 import 'package:intl/intl.dart';
 import 'package:ntp/ntp.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:vibration/vibration.dart';
+
 
 class ScreenTimeSelect extends StatefulWidget {
   final ModelMeetingRoom modelMeetingRoom;
@@ -23,12 +25,14 @@ class ScreenTimeSelect extends StatefulWidget {
 
 class _ScreenTimeSelectState extends State<ScreenTimeSelect> {
   ModelMeetingRoom modelMeetingRoom;
+
   SharedPreferences _preferences;
   String _userNum = '';
 
   _ScreenTimeSelectState(this.modelMeetingRoom);
 
   DateTime curTime;
+
 
   _getCheckUserNumPref() async {
     _preferences = await SharedPreferences.getInstance();
@@ -52,15 +56,12 @@ class _ScreenTimeSelectState extends State<ScreenTimeSelect> {
     });
   }
 
+
   _setCurrentTime() async {
-
-
     curTime = DateTime.now();
 
     //실제 네트워크상 실제 표준시간을 가져와 UTC로 변환하고 9시간을 더해 한국화... 휴대폰 국적이 바뀌어도 시간은 동일
     curTime = (await NTP.now()).toUtc().add(Duration(hours: 9));
-
-
   }
 
   @override
@@ -71,21 +72,38 @@ class _ScreenTimeSelectState extends State<ScreenTimeSelect> {
     _setCurrentTime();
   }
 
-  _backgroundStart() async {
-    WidgetsFlutterBinding.ensureInitialized();
+
+  _startBackground() async {
+    // WidgetsFlutterBinding.ensureInitialized();
+    // if(!await FlutterBackgroundService().isServiceRunning())
+
     await FlutterBackgroundService.initialize(onStart);
+
+    Vibration.vibrate(duration: 1);
+
+    FlutterBackgroundService service = FlutterBackgroundService();
+
     Future.delayed(
         Duration(milliseconds: 500),
-        () => {
-              FlutterBackgroundService()
-                  .sendData({"roomNum": modelMeetingRoom.roomNum.toString()})
-            });
+            () => {
+          service.sendData({"roomNum": modelMeetingRoom.roomNum}),
+          service.sendData({"time": modelMeetingRoom.time}),
+          service.sendData({"timerAction": "start"}),
+        });
   }
+
+
 
   @override
   Widget build(BuildContext context) {
-    final double deviceWidth = MediaQuery.of(context).size.width;
-    final double deviceHeight = MediaQuery.of(context).size.height;
+    final double deviceWidth = MediaQuery
+        .of(context)
+        .size
+        .width;
+    final double deviceHeight = MediaQuery
+        .of(context)
+        .size
+        .height;
 
     print('timeselect');
     return Scaffold(
@@ -185,7 +203,7 @@ class _ScreenTimeSelectState extends State<ScreenTimeSelect> {
                       fontSize: 25,
                       fontWeight: FontWeight.bold),
                 ),
-                _timeButton('30분'),
+                _timeButton('2분'),
                 _timeButton('60분'),
                 _timeButton('90분'),
                 _timeButton('120분'),
@@ -196,8 +214,8 @@ class _ScreenTimeSelectState extends State<ScreenTimeSelect> {
 
           Expanded(
               child: Container(
-            child: Center(child: WidgetCurrentTime()),
-          ))
+                child: Center(child: WidgetCurrentTime()),
+              ))
         ],
       ),
     );
@@ -229,17 +247,13 @@ class _ScreenTimeSelectState extends State<ScreenTimeSelect> {
   }
 
   _navigateResultScreen(ModelMeetingRoom room, int resultMode) async {
-    /*
-    final result = await Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (BuildContext context) => ScreenResult(room, resultMode)));
 
-     */
     final result = await Navigator.pushReplacement(
       context,
       PageRouteBuilder(
-          pageBuilder: (context, b, c) => ScreenResult(room, resultMode),
+          pageBuilder: (context, b, c) {
+           return ScreenResult( room, resultMode);
+          },
           transitionDuration: Duration(seconds: 0)),
     );
 
@@ -247,13 +261,19 @@ class _ScreenTimeSelectState extends State<ScreenTimeSelect> {
   }
 
   _addConvertedTime(String increaseTime) {
-    // DateTime time = DateTime.now();
 
     print('네트워크시간 NTP : ' + curTime.toString());
 
     if (increaseTime.trim() == '하루종일') {
       return DateFormat('yyyy-MM-dd HH:mm').format(new DateTime(
-          curTime.year, curTime.month, curTime.day, 21, 0, 0, 0, 0));
+          curTime.year,
+          curTime.month,
+          curTime.day,
+          21,
+          0,
+          0,
+          0,
+          0));
     }
 
     return DateFormat('yyyy-MM-dd HH:mm')
@@ -276,6 +296,6 @@ class _ScreenTimeSelectState extends State<ScreenTimeSelect> {
         isUsing: modelMeetingRoom.isUsing,
         userNum: modelMeetingRoom.userNum);
 
-    _backgroundStart();
+    _startBackground();
   }
 }
