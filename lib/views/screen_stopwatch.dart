@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
-import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +8,6 @@ import 'package:inpsyt_meeting/models/model_meetingroom.dart';
 import 'package:inpsyt_meeting/services/service_background_noti.dart';
 import 'package:inpsyt_meeting/views/widgets/widget_buttons.dart';
 import 'package:inpsyt_meeting/views/widgets/widget_labels.dart';
-import 'package:ntp/ntp.dart';
 
 class ScreenStopWatch extends StatefulWidget {
   final ModelMeetingRoom _modelMeetingRoom;
@@ -23,14 +20,12 @@ class ScreenStopWatch extends StatefulWidget {
 }
 
 class _ScreenStopWatchState extends State<ScreenStopWatch> {
-  Timer _timer;
   final ModelMeetingRoom _modelMeetingRoom;
 
   _ScreenStopWatchState(this._modelMeetingRoom);
 
   DateTime currentTime;
 
-  //ModelMeetingRoom newRoom; //지금 현재 데이터베이스에 있는 방정보
   int leftTime = 10;
   int backgroundLeftTime;
 
@@ -55,27 +50,25 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
  */
 
   _startBackground() async {
-
-    WidgetsFlutterBinding.ensureInitialized();
+    // WidgetsFlutterBinding.ensureInitialized();
+    // if(!await FlutterBackgroundService().isServiceRunning())
 
     await FlutterBackgroundService.initialize(onStart);
 
-
-    //FlutterBackgroundService().sendData({"roomNum": _modelMeetingRoom.roomNum.toString()});
-
+    FlutterBackgroundService service = FlutterBackgroundService();
 
     Future.delayed(
         Duration(milliseconds: 500),
         () => {
-              FlutterBackgroundService().sendData({"roomNum": _modelMeetingRoom.roomNum.toString()})
+              service.sendData({"roomNum": _modelMeetingRoom.roomNum}),
+              service.sendData({"time": _modelMeetingRoom.time}),
+              service.sendData({"timerAction": "start"}),
             });
-
   }
 
   @override
   void dispose() {
     // TODO: implement dispose
-    _timer.cancel();
     super.dispose();
   }
 
@@ -84,9 +77,7 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
     // TODO: implement initState
     super.initState();
 
-
     _startBackground();
-
   }
 
   @override
@@ -94,13 +85,11 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
     double deviceHeight = MediaQuery.of(context).size.height;
     double deviceWidth = MediaQuery.of(context).size.width;
 
-
     print('stopwatch');
 
     currentTime = DateTime.now();
 
     return Scaffold(
-
       body: Column(
         children: [
           //상단부 영역
@@ -179,7 +168,6 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
                     blurRadius: 9),
               ],
             ),
-
             child: StreamBuilder<Map<String, dynamic>>(
               stream: FlutterBackgroundService().onDataReceived,
               builder: (context, snapshot) {
@@ -192,41 +180,42 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
                 final data = snapshot.data;
                 // DateTime date = DateTime.tryParse(data["current_date"]);
                 backgroundLeftTime = int.parse(data['leftTime']);
-                return backgroundLeftTime>0?Column(
-                  mainAxisSize: MainAxisSize.max,
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Text(
-                      '현 회의 잔여시간',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          color: color_dark,
-                          fontSize: 25,
-                          fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      // newRoom==null?'불러오는 중':endTime.difference(currentTime).inMinutes.toString()+'분',
-                      backgroundLeftTime.toString() + '분',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          color: color_dark,
-                          fontSize: 50,
-                          fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      '남았습니다',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          color: color_dark,
-                          fontSize: 25,
-                          fontWeight: FontWeight.bold),
-                    ),
-                    Container(
-                      child: Image.asset('assets/images/anime.gif'),
-                      height: 100,
-                    ),
+                return backgroundLeftTime > 0
+                    ? Column(
+                        mainAxisSize: MainAxisSize.max,
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          Text(
+                            '현 회의 잔여시간',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                color: color_dark,
+                                fontSize: 25,
+                                fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            // newRoom==null?'불러오는 중':endTime.difference(currentTime).inMinutes.toString()+'분',
+                            backgroundLeftTime.toString() + '분',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                color: color_dark,
+                                fontSize: 50,
+                                fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            '남았습니다',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                color: color_dark,
+                                fontSize: 25,
+                                fontWeight: FontWeight.bold),
+                          ),
+                          Container(
+                            child: Image.asset('assets/images/anime.gif'),
+                            height: 100,
+                          ),
 
-                    /*
+                          /*
                     GradientButton(
                         Column(
                           children: [
@@ -250,156 +239,81 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
 
                      */
 
-                    GradientButton(
-                        Column(
-                          children: [
-                            Text(
-                              '체크아웃',
-                              style: TextStyle(
-                                  color: color_white,
-                                  fontSize: 25,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                          ],
-                        ),
-                        color_gradientBlueStart,
-                        color_gradientBlueEnd,
-                        60,
-                        deviceWidth / 1.3,
-                        10, () {
-                      _checkOutAndPop();
-                    }),
-                  ],
-                ):Column(
-                  mainAxisSize: MainAxisSize.max,
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Text(
-                      '회의가 종료되었습니다.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          color: color_dark,
-                          fontSize: 25,
-                          fontWeight: FontWeight.bold),
-                    ),
-
-                    GradientButton(
-                        Column(
-                          children: [
-                            Text(
-                              '나가기',
-                              style: TextStyle(
-                                  color: color_white,
-                                  fontSize: 25,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                          ],
-                        ),
-                        color_gradientBlueStart,
-                        color_gradientBlueEnd,
-                        60,
-                        deviceWidth / 1.3,
-                        10, () {
-                      _checkOutAndPop();
-                    }),
-                  ],
-                );
+                          GradientButton(
+                              Column(
+                                children: [
+                                  Text(
+                                    '체크아웃',
+                                    style: TextStyle(
+                                        color: color_white,
+                                        fontSize: 25,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ],
+                              ),
+                              color_gradientBlueStart,
+                              color_gradientBlueEnd,
+                              60,
+                              deviceWidth / 1.3,
+                              10, () {
+                            _checkOutAndPop();
+                          }),
+                        ],
+                      )
+                    : Column(
+                        mainAxisSize: MainAxisSize.max,
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          Text(
+                            '회의가 종료되었습니다.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                color: color_dark,
+                                fontSize: 25,
+                                fontWeight: FontWeight.bold),
+                          ),
+                          GradientButton(
+                              Column(
+                                children: [
+                                  Text(
+                                    '나가기',
+                                    style: TextStyle(
+                                        color: color_white,
+                                        fontSize: 25,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ],
+                              ),
+                              color_gradientBlueStart,
+                              color_gradientBlueEnd,
+                              60,
+                              deviceWidth / 1.3,
+                              10, () {
+                            _checkOutAndPop();
+                          }),
+                        ],
+                      );
               },
             ),
-
-            //파이어베이스 직접접속
-            // StreamBuilder(
-            //   stream: Firestore.instance
-            //       .collection('rooms')
-            //       .document(_modelMeetingRoom.roomNum.toString())
-            //       .snapshots(),
-            //   builder: (context, snapshot) {
-            //     if (!snapshot.hasData) {
-            //       return CircularProgressIndicator();
-            //     }
-            //
-            //     final document = snapshot.data;
-            //
-            //     leftTime = DateTime.parse(document['time'])
-            //         .difference(DateTime.now())
-            //         .inMinutes;
-            //     return Column(
-            //       mainAxisSize: MainAxisSize.max,
-            //       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            //       children: [
-            //         Text(
-            //           '현 회의 잔여시간',
-            //           textAlign: TextAlign.center,
-            //           style: TextStyle(
-            //               color: color_dark,
-            //               fontSize: 25,
-            //               fontWeight: FontWeight.bold),
-            //         ),
-            //         Text(
-            //           // newRoom==null?'불러오는 중':endTime.difference(currentTime).inMinutes.toString()+'분',
-            //           leftTime.toString() + '분',
-            //           textAlign: TextAlign.center,
-            //           style: TextStyle(
-            //               color: color_dark,
-            //               fontSize: 50,
-            //               fontWeight: FontWeight.bold),
-            //         ),
-            //         Text(
-            //           '남았습니다',
-            //           textAlign: TextAlign.center,
-            //           style: TextStyle(
-            //               color: color_dark,
-            //               fontSize: 25,
-            //               fontWeight: FontWeight.bold),
-            //         ),
-            //         Container(
-            //           child: Image.asset('assets/images/anime.gif'),
-            //           height: 100,
-            //         ),
-            //         GradientButton(
-            //             Column(
-            //               children: [
-            //                 Text(
-            //                   '체크아웃',
-            //                   style: TextStyle(
-            //                       color: color_white,
-            //                       fontSize: 25,
-            //                       fontWeight: FontWeight.bold),
-            //                 ),
-            //               ],
-            //             ),
-            //             color_gradientBlueStart,
-            //             color_gradientBlueEnd,
-            //             60,
-            //             deviceWidth / 1.3,
-            //             10, () {
-            //           _checkOutAndPop();
-            //         }),
-            //       ],
-            //     );
-            //   },
-            // ),
           ),
-          Expanded(
-              child: Container(
-            child:Center(child: WidgetCurrentTime())
-
-          ))
-          ],
+          Expanded(child: Container(child: Center(child: WidgetCurrentTime())))
+        ],
       ),
     );
   }
 
-  _checkOutAndPop() async{
+  _checkOutAndPop() async {
+    FlutterBackgroundService().sendData({'timerAction': 'stop'});
 
-    final service = FlutterBackgroundService();
-
-
+    /*
     if((await service.isServiceRunning())){
       service.sendData({'action':'stopService'});
     }
+     */
 
-   // if(backgroundLeftTime>0)FlutterBackgroundService().sendData({'action': 'stopService'}); //FlutterBackgroundService() 가 이미 종료됐는데 sendData통해서 stopService호출되게하면 앱이 다르게 인식하고
+    // FlutterBackgroundService().sendData({'action':'stopService'});
+
+    //if(backgroundLeftTime>0)FlutterBackgroundService().sendData({'action': 'stopService'}); //FlutterBackgroundService() 가 이미 종료됐는데 sendData통해서 stopService호출되게하면 앱이 다르게 인식하고
     //상호연동이 안됨
     Navigator.pop(context);
     Firestore.instance
