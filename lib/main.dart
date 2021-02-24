@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_background_service/flutter_background_service.dart';
-import 'package:inpsyt_meeting/constants/const_colors.dart';
-import 'package:inpsyt_meeting/services/service_background_noti.dart';
+//import 'package:inpsyt_meeting/views/screen_firstAuthen.dart';
 import 'package:inpsyt_meeting/views/screen_meetingrooms.dart';
+import 'package:inpsyt_meeting/constants/const_colors.dart';
+import 'package:uni_links/uni_links.dart';
+
 import 'views/screen_firstAuthen.dart';
 
 
 
 void main() {
-
-
   ErrorWidget.builder = (FlutterErrorDetails details) {
     return Container(
       color: Colors.white,
@@ -32,9 +31,13 @@ void main() {
 
 
 
+
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+
+
+    //타임존 확인
 
 
 
@@ -59,9 +62,9 @@ class MyApp extends StatelessWidget {
 
 
 
-      home: ScreenMeetingRooms(),
+     home: ScreenMeetingRooms(),
 
-      //home: ScreenFistAuthen(),
+     // home: ScreenFistAuthen(),
       theme: ThemeData(accentColor: color_skyBlue,fontFamily: 'NanumSquare'),
     );
   }

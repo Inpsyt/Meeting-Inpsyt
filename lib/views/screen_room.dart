@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:inpsyt_meeting/constants/const_colors.dart';
-
 import 'package:inpsyt_meeting/views/screen_timeselect.dart';
 import 'package:inpsyt_meeting/views/widgets/widget_buttons.dart';
 import 'package:inpsyt_meeting/models/model_meetingroom.dart';
@@ -63,7 +62,9 @@ class _ScreenRoomState extends State<ScreenRoom> {
                           color: color_white,
                         ),
                         onPressed: () {
+
                           Navigator.pop(context);
+
                         }),
                     Text(
                       'Meeting Room',
@@ -93,6 +94,7 @@ class _ScreenRoomState extends State<ScreenRoom> {
             ),
           ),
 
+
           SizedBox(
             height: 30,
           ),
@@ -115,42 +117,35 @@ class _ScreenRoomState extends State<ScreenRoom> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 Text(
-                  modelMeetingRoom.isUsing ? '사용중!' : '체크인 하세요!',
+                  modelMeetingRoom.isUsing?'사용중!':'체크인 하세요!',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                      color: modelMeetingRoom.isUsing ? color_dark : color_dark,
+                      color: modelMeetingRoom.isUsing?color_dark:color_dark,
                       fontSize: 35,
                       fontWeight: FontWeight.bold),
                 ),
-                modelMeetingRoom.isUsing
-                    ? Text(
-                        '사용자 : ' + modelMeetingRoom.userNum,
-                        style: TextStyle(fontSize: 17),
-                      )
-                    : GradientButton(
-                        Column(
-                          children: [
-                            Text(
-                              '체크인',
-                              style: TextStyle(
-                                  color: color_white,
-                                  fontSize: 25,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                            Text(
-                              '회의실 이용을 시작합니다',
-                              style:
-                                  TextStyle(color: color_white, fontSize: 17),
-                            ),
-                          ],
+                modelMeetingRoom.isUsing?Text('사용자 : '+modelMeetingRoom.userNum,style: TextStyle(fontSize: 17),):GradientButton(
+                    Column(
+                      children: [
+                        Text(
+                          '체크인',
+                          style: TextStyle(color: color_white,fontSize: 25,fontWeight: FontWeight.bold),
                         ),
-                        color_gradientBlueStart,
-                        color_gradientBlueEnd,
-                        90,
-                        deviceWidth / 1.3,
-                        10, () {
-                        _navigateTimeSelect(context, modelMeetingRoom);
-                      }),
+                        Text(
+                          '회의실 이용을 시작합니다',
+                          style: TextStyle(color: color_white,fontSize: 17),
+                        ),
+                      ],
+                    ),
+                    color_gradientBlueStart,
+                    color_gradientBlueEnd,
+                    90,
+                    deviceWidth/1.3,
+                    10,(){
+
+                      _navigateTimeSelect(context, modelMeetingRoom);
+
+                }),
 
                 // //더이상 사용안하는 버튼
                 // GradientButton(
@@ -178,36 +173,33 @@ class _ScreenRoomState extends State<ScreenRoom> {
           ),
 
           Expanded(
-            child: Container(
-                child: Center(
-              child: WidgetCurrentTime(),
-            )),
+              child: Container(
+            child: Center(child: WidgetCurrentTime(),)),
           )
         ],
       ),
     );
+
   }
 
-  _navigateTimeSelect(BuildContext context, ModelMeetingRoom roomModel) async {
-    final result = await Navigator.pushReplacement(
-      context,
-      PageRouteBuilder(
-          pageBuilder: (context, b, c) {
-            return ScreenTimeSelect(roomModel);
-          },
-          transitionDuration: Duration(seconds: 0)),
+  _navigateTimeSelect(BuildContext context, ModelMeetingRoom roomModel) async{
+
+    final result = await Navigator.pushReplacement(context,
+        PageRouteBuilder(pageBuilder: (context,b,c)=>ScreenTimeSelect(roomModel),transitionDuration: Duration(seconds: 0)),
     );
 
-    if (result == 'selected') {
-      Navigator.pop(context, 'roomfinish');
+    if(result == 'selected'){
+      Navigator.pop(context,'roomfinish');
     }
+
   }
 
   @override
   void dispose() {
     // TODO: implement dispose
 
-    Navigator.pop(context, 'roomfinish');
+    Navigator.pop(context,'roomfinish');
     super.dispose();
   }
+
 }
