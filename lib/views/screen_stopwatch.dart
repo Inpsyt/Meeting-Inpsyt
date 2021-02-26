@@ -62,8 +62,16 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
         () => {
               service.sendData({"roomNum": _modelMeetingRoom.roomNum}),
               service.sendData({"time": _modelMeetingRoom.time}),
-              service.sendData({"timerAction": "start"}),
             });
+  }
+
+  _stopBackground() async{
+
+    final service = FlutterBackgroundService();
+
+    if(await service.isServiceRunning()){
+      service.sendData({'action':'stopService'});
+    }
   }
 
   @override
@@ -303,13 +311,9 @@ class _ScreenStopWatchState extends State<ScreenStopWatch> {
   }
 
   _checkOutAndPop() async {
-    FlutterBackgroundService().sendData({'timerAction': 'stop'});
 
-    /*
-    if((await service.isServiceRunning())){
-      service.sendData({'action':'stopService'});
-    }
-     */
+
+    _stopBackground();
 
     // FlutterBackgroundService().sendData({'action':'stopService'});
 

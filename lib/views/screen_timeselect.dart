@@ -79,7 +79,7 @@ class _ScreenTimeSelectState extends State<ScreenTimeSelect> {
 
     await FlutterBackgroundService.initialize(onStart);
 
-    Vibration.vibrate(duration: 1);
+    Vibration.vibrate(duration: 100);
 
     FlutterBackgroundService service = FlutterBackgroundService();
 
@@ -88,7 +88,6 @@ class _ScreenTimeSelectState extends State<ScreenTimeSelect> {
             () => {
           service.sendData({"roomNum": modelMeetingRoom.roomNum}),
           service.sendData({"time": modelMeetingRoom.time}),
-          service.sendData({"timerAction": "start"}),
         });
   }
 

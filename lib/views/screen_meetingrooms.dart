@@ -155,19 +155,12 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
     setState(() {});
   }
 
-  _startBackground()async {
-
-    await FlutterBackgroundService.initialize(onStart,foreground: false);
-  }
-
-
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
 
     _getCheckUserNumPref();
-    _startBackground();
 
     //_nfcReaderSet();
 
