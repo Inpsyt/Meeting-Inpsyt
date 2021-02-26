@@ -9,7 +9,6 @@ import 'package:ntp/ntp.dart';
 import 'package:vibration/vibration.dart';
 
 void onStart() {
-
   WidgetsFlutterBinding.ensureInitialized();
   final service = FlutterBackgroundService();
 
@@ -34,94 +33,72 @@ void onStart() {
 
     if (event["time"] != null) endTime = DateTime.parse(event["time"]);
 
-    if (event["timerAction"] == "start") {
-      if (timerObject != null) return;
+    if (event["action"] == "stopService") {
 
-      currentTime = DateTime.now();
+      service.stopBackgroundService();
 
-      NTP.now().then((value) => {
-            //실제 네트워크상 실제 표준시간을 가져와 UTC로 변환하고 9시간을 더해 한국화... 휴대폰 국적이 바뀌어도 시간은 동일
-            currentTime = DateTime.parse(value
-                .toUtc()
-                .add(Duration(hours: 9))
-                .toString()
-                .substring(0, 22))
-          });
+    }
+  });
+
+  {
+    currentTime = DateTime.now();
+
+    NTP.now().then((value) => {
+          //실제 네트워크상 실제 표준시간을 가져와 UTC로 변환하고 9시간을 더해 한국화... 휴대폰 국적이 바뀌어도 시간은 동일
+          currentTime = DateTime.parse(
+              value.toUtc().add(Duration(hours: 9)).toString().substring(0, 22))
+        });
+
+    timerObject = Timer.periodic(Duration(milliseconds: countDonwDuration),
+        (timer) async {
+      if (!(await service.isServiceRunning())) timerObject.cancel();
+
+      print('ServiceNoti: ===================================================');
+
+      currentTime = currentTime.add(Duration(milliseconds: countDonwDuration));
+      print('ServiceNoti: current: ' + currentTime.toString());
+      print('ServiceNoti: endTime: ' + endTime.toString());
+      print('ServiceNoti: roomNum: ' +
+          roomNum.toString()); //아이폰에서는 방번호는 잘 불러오나, DB에서 값을 못 가져옴
+      leftTime = endTime.difference(currentTime).inMinutes;
 
 
-      timerObject = Timer.periodic(Duration(milliseconds: countDonwDuration),
-          (timer) async {
-        if (!(await service.isServiceRunning())) timerObject.cancel();
+      service.sendData({
+        'leftTime': leftTime.toString(),
+      });
 
+      service.setNotificationInfo(
+          title: '잔여시간: ' + leftTime.toString() + '분',
+          //+ leftTime.toString(),
+          content: '시간 초과시 자동으로 Check-Out 됩니다.');
 
-
-
-        print(
-            'ServiceNoti: ===================================================' );
-
-        currentTime =
-            currentTime.add(Duration(milliseconds: countDonwDuration));
-        print('ServiceNoti: current: ' + currentTime.toString());
-        print('ServiceNoti: endTime: ' + endTime.toString());
-        print('ServiceNoti: roomNum: ' +
-            roomNum.toString()); //아이폰에서는 방번호는 잘 불러오나, DB에서 값을 못 가져옴
-        leftTime = endTime.difference(currentTime).inMinutes;
-
-        //print(roomNum);
-
+      if (leftTime <= 0) { //시간 초과시 실행하게 될 메서드
         service.sendData({
           'leftTime': leftTime.toString(),
         });
 
-        service.setForegroundMode(true);//포그라운드 경고!! initialize이후 바로 setForegroundMode(false)가 적용되면 이상하게 오류남..
+        Firestore.instance
+            .collection('rooms')
+            .document(roomNum.toString())
+            .updateData({'time': 'none', 'isUsing': false, 'userNum': 'none'});
 
-        service.setNotificationInfo(
-            title: '잔여시간: ' + leftTime.toString() + '분',
-            //+ leftTime.toString(),
-            content: '시간 초과시 자동으로 Check-Out 됩니다.');
+        service.setForegroundMode(false);
+        Vibration.vibrate(duration: 1500);
 
-        if (leftTime <= 0) {
-
-          service.sendData({
-            'leftTime': leftTime.toString(),
-          });
-
-
-          Firestore.instance.collection('rooms').document(roomNum.toString()).updateData(
-              {'time': 'none', 'isUsing': false, 'userNum': 'none'});
-
-          service.setForegroundMode(false);
-          Vibration.vibrate(duration: 1500);
-
-          await LaunchApp.openApp(
-            androidPackageName: 'com.kkumsoft.inpsyt_meeting',
-            iosUrlScheme: 'meting://',
-            appStoreLink:
-            'itms-apps://itunes.apple.com/us/app/pulse-secure/id945832041',
-            // openStore: false
-          );
+        await LaunchApp.openApp(
+          androidPackageName: 'com.kkumsoft.inpsyt_meeting',
+          iosUrlScheme: 'meting://',
+          appStoreLink:
+              'itms-apps://itunes.apple.com/us/app/pulse-secure/id945832041',
+          // openStore: false
+        );
 
 
-          timerObject.cancel();
-          timerObject = null;
-        }
-      });
-    }
-
-    if (event['timerAction'] == 'stop') {
-      if (timerObject == null)
-        timerObject.cancel();
-      else {
         timerObject.cancel();
         timerObject = null;
+
+        service.stopBackgroundService();
       }
-
-      service.setForegroundMode(false);
-    }
-  });
-
+    });
+  }
 }
-
-
-
-
