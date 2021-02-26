@@ -14,13 +14,12 @@ import 'package:inpsyt_meeting/views/screen_room.dart';
 import 'package:diamond_notched_fab/diamond_notched_fab.dart';
 import 'package:inpsyt_meeting/models/model_meetingroom.dart';
 import 'package:inpsyt_meeting/views/screen_stopwatch.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-//import 'package:nfc_in_flutter/nfc_in_flutter.dart';
 import 'package:ntp/ntp.dart';
-//import 'package:permission_handler/permission_handler.dart';
-//import 'package:qrscan/qrscan.dart' as scanner;
-//import 'package:uni_links/uni_links.dart';
+import 'package:uni_links/uni_links.dart';
+import 'package:qrscan/qrscan.dart' as scanner;
 
 class ScreenMeetingRooms extends StatefulWidget {
   @override
@@ -71,7 +70,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
   }
 
 
-  /*
+
   Future _scan() async {
     await Permission.camera.request();
     //스캔 시작 - 이때 스캔 될때까지 blocking
@@ -80,18 +79,18 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
 
     setState(() {
       _output = barcode;
-      _entryRoomWithUni(barcode);
+      _entryRoomWithUni(_output);
     });
   }
 
 
-   */
+
 
 
 
   StreamSubscription _sub;
 
-  /*
+
   Future<Null> initUniLisks() async {
     String initialLink;
 
@@ -110,7 +109,6 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
     });
   }
 
-   */
 
 
 
@@ -173,7 +171,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
 
     //_nfcReaderSet();
 
-    //initUniLisks();
+    initUniLisks();
 
     // cfs
     CollectionReference reference = db.collection('rooms');
@@ -222,7 +220,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
       floatingActionButton:
       DiamondNotchedFab(
         onPressed: () {
-         // _scan();
+          _scan();
         },
         tooltip: 'QR스캔',
         borderRadius: 14,
