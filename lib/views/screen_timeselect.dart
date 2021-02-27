@@ -84,7 +84,7 @@ class _ScreenTimeSelectState extends State<ScreenTimeSelect> {
     FlutterBackgroundService service = FlutterBackgroundService();
 
     Future.delayed(
-        Duration(milliseconds: 500),
+        Duration(milliseconds: 1000),
             () => {
           service.sendData({"roomNum": modelMeetingRoom.roomNum}),
           service.sendData({"time": modelMeetingRoom.time}),

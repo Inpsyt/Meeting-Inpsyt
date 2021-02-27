@@ -68,7 +68,7 @@ void onStart() {
 
 
       if(currentTimeCheckCNT >= 10){
-        currentTime = DateTime.now();
+        //currentTime = DateTime.now();
         NTP.now().then((value) => {
           //실제 네트워크상 실제 표준시간을 가져와 UTC로 변환하고 9시간을 더해 한국화... 휴대폰 국적이 바뀌어도 시간은 동일
           currentTime = DateTime.parse(
@@ -89,6 +89,7 @@ void onStart() {
       print('ServiceNoti: ===================================================');
 
       currentTime = currentTime.add(Duration(milliseconds: countDonwDuration));
+
       print('ServiceNoti: current: ' + currentTime.toString());
       print('ServiceNoti: endTime: ' + endTime.toString());
       print('ServiceNoti: roomNum: ' +
