@@ -9,6 +9,8 @@ import 'package:ntp/ntp.dart';
 import 'package:vibration/vibration.dart';
 
 void onStart() {
+
+  //안드로이드에서만 지원하게 될 기능..
   WidgetsFlutterBinding.ensureInitialized();
   final service = FlutterBackgroundService();
 
@@ -17,6 +19,8 @@ void onStart() {
   DateTime currentTime = null;
   DateTime endTime = null;
   int leftTime;
+
+  int currentTimeCheckCNT = 0;
 
   int roomNum;
 
@@ -49,9 +53,38 @@ void onStart() {
               value.toUtc().add(Duration(hours: 9)).toString().substring(0, 22))
         });
 
+
+
+
+
+
+
+
+    //Start periodic
     timerObject = Timer.periodic(Duration(milliseconds: countDonwDuration),
         (timer) async {
       if (!(await service.isServiceRunning())) timerObject.cancel();
+
+
+
+      if(currentTimeCheckCNT >= 10){
+        currentTime = DateTime.now();
+        NTP.now().then((value) => {
+          //실제 네트워크상 실제 표준시간을 가져와 UTC로 변환하고 9시간을 더해 한국화... 휴대폰 국적이 바뀌어도 시간은 동일
+          currentTime = DateTime.parse(
+              value.toUtc().add(Duration(hours: 9)).toString().substring(0, 22))
+        });
+
+
+
+        print('네트워크 시간 5초후 새로고침 기능 작동');
+
+        currentTimeCheckCNT = 0;
+      }
+
+
+      currentTimeCheckCNT ++;
+
 
       print('ServiceNoti: ===================================================');
 

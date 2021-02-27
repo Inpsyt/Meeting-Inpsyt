@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';  //cfs
+import 'package:connectivity/connectivity.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -28,12 +29,21 @@ class ScreenMeetingRooms extends StatefulWidget {
 
 class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
   final Firestore db = Firestore.instance; //cfs
+
+
   Timer updateTimer;
   List<ModelMeetingRoom> roomList;
   SharedPreferences _preferences;
   String _userNum = '';
   bool _youAreUsingNow = true; //오프라인 실행시 또는 체크아웃시 방 들어가지는 버그 수정을 위해 true
   bool _nowInRoom = false;
+  StreamSubscription _sub;
+
+  //network connectivity
+  StreamSubscription _connectionSub;
+  bool _isNetworkConnected = false;
+  final Connectivity _connectivity = Connectivity();
+
 
   String _output = 'Empty Scan Code'; //qr 인식용
 
@@ -88,7 +98,6 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
 
 
 
-  StreamSubscription _sub;
 
 
   Future<Null> initUniLisks() async {
@@ -118,6 +127,8 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
 
     DateTime curTime = await NTP.now(); //네트워크 시간에 맡기기
     print('ScreenMeetingRooms : 네트워크시간 감지됨 NTP : ' + curTime.toString());
+
+
 
     await db //판별을 위해 서버 접속
         .collection('rooms')
@@ -161,6 +172,9 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
     super.initState();
 
     _getCheckUserNumPref();
+
+    initConnectivity();
+    _connectionSub = _connectivity.onConnectivityChanged.listen((_updateConnectionStatus));
 
     //_nfcReaderSet();
 
@@ -221,9 +235,8 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
             padding: EdgeInsets.all(13),
             child: Image.asset('assets/images/qricon.png')),
       ),
-
-
-
+      
+      
       body: Column(
         children: [
           Container(
@@ -291,6 +304,8 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
 
 
           //하단부 리스트 영역
+
+          _isNetworkConnected?
           StreamBuilder<QuerySnapshot>(
             stream: db.collection('rooms').orderBy('roomNum').snapshots(),
             builder: (context, snapshot) {
@@ -309,7 +324,17 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
                     }),
               );
             },
-          )
+          ):
+          Expanded(child:Column(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 30,),
+              Text('네트워크 접속중..',style: TextStyle(fontSize: 20),)
+            ],
+          ))
+
 
           //cfs
 
@@ -318,7 +343,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
 
 
         ],
-      ),
+      )
     );
   }
 
@@ -462,6 +487,45 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
         });
   }
 
+
+
+//network connection check ================================================
+  Future _updateConnectionStatus(ConnectivityResult result) async{
+
+    switch (result){
+      case ConnectivityResult.wifi:
+      case ConnectivityResult.mobile:
+      //case ConnectivityResult.none:
+        setState(() {
+          _isNetworkConnected = true;
+          _checkRoomsStatus(); // refresh rooms
+        });
+        break;
+      case ConnectivityResult.none:
+      default:
+        setState(() {
+          _isNetworkConnected = false;
+        });
+        break;
+    }
+
+  }
+
+  Future initConnectivity() async{
+    ConnectivityResult result;
+
+    try{
+      result = await _connectivity.checkConnectivity();
+
+    }on PlatformException catch(e){
+      print(e.toString());
+    }
+    if (!mounted) {
+      return Future.value(null);
+    }
+
+    return _updateConnectionStatus(result);
+  }
 
 
 
