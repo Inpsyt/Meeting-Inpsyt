@@ -1,5 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:inpsyt_meeting/constants/const_colors.dart';
+import 'package:inpsyt_meeting/models/model_reserve.dart';
+import 'package:inpsyt_meeting/views/screen_reserve.dart';
 
 import 'package:inpsyt_meeting/views/screen_timeselect.dart';
 import 'package:inpsyt_meeting/views/widgets/widget_buttons.dart';
@@ -22,85 +25,35 @@ class _ScreenRoomState extends State<ScreenRoom> {
 
   @override
   Widget build(BuildContext context) {
-    double deviceWidth = MediaQuery.of(context).size.width;
-    double deviceHeight = MediaQuery.of(context).size.height;
+    double deviceWidth = MediaQuery
+        .of(context)
+        .size
+        .width;
+    double deviceHeight = MediaQuery
+        .of(context)
+        .size
+        .height;
 
     return Scaffold(
-      // floatingActionButton: DiamondNotchedFab(
-      //   onPressed: () {},
-      //   tooltip: 'QR스캔',
-      //   borderRadius: 14,
-      //   child: Padding(
-      //       padding: EdgeInsets.all(13),
-      //       child: Image.asset('assets/images/qricon.png')),
-      // ),
-      body: Column(
+      appBar: AppBar(
+        backgroundColor: color_skyBlue,
+        centerTitle: true,
+        title: Text(
+          modelMeetingRoom.roomName,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+              color: color_yellow, fontSize: 25, fontWeight: FontWeight.bold),
+        ),
+      ),
+      body: ListView(
+        physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
         children: [
-          //상단부 영역
-          Container(
-            //상단부 영역
-            height: 130,
-            decoration: BoxDecoration(
-              boxShadow: [
-                BoxShadow(
-                    color: Colors.grey, blurRadius: 8, offset: Offset(0.1, 0.9))
-              ],
-              color: color_skyBlue,
-            ),
-
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                SizedBox(
-                  height: 35,
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    IconButton(
-                        icon: Icon(
-                          Icons.arrow_back_ios,
-                          color: color_white,
-                        ),
-                        onPressed: () {
-                          Navigator.pop(context);
-                        }),
-                    Text(
-                      'Meeting Room',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          color: color_white,
-                          fontSize: 25,
-                          fontWeight: FontWeight.bold),
-                    ),
-                    IconButton(
-                        icon: Icon(
-                          Icons.arrow_back_ios,
-                          color: Colors.transparent,
-                        ),
-                        onPressed: () {}),
-                  ],
-                ),
-                Text(
-                  modelMeetingRoom.roomName,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                      color: color_yellow,
-                      fontSize: 25,
-                      fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-          ),
-
           SizedBox(
             height: 30,
           ),
-
-          //하단부 영역
           Container(
-            width: deviceWidth / 1.1,
-            height: deviceHeight / 1.9,
+            margin: EdgeInsets.symmetric(horizontal: 15),
+            padding: EdgeInsets.symmetric(vertical: 30),
             decoration: BoxDecoration(
               color: color_white,
               boxShadow: [
@@ -122,12 +75,18 @@ class _ScreenRoomState extends State<ScreenRoom> {
                       fontSize: 35,
                       fontWeight: FontWeight.bold),
                 ),
+
+                SizedBox(
+                  height: 40,
+                ),
                 modelMeetingRoom.isUsing
                     ? Text(
-                        '사용자 : ' + modelMeetingRoom.userNum,
-                        style: TextStyle(fontSize: 17),
-                      )
-                    : GradientButton(
+                  '사용자 : ' + modelMeetingRoom.userNum,
+                  style: TextStyle(fontSize: 17),
+                )
+                    : Column(
+                  children: [
+                    GradientButton(
                         Column(
                           children: [
                             Text(
@@ -139,18 +98,49 @@ class _ScreenRoomState extends State<ScreenRoom> {
                             ),
                             Text(
                               '회의실 이용을 시작합니다',
-                              style:
-                                  TextStyle(color: color_white, fontSize: 17),
+                              style: TextStyle(
+                                  color: color_white, fontSize: 17),
                             ),
                           ],
                         ),
                         color_gradientBlueStart,
                         color_gradientBlueEnd,
-                        90,
+                        70,
                         deviceWidth / 1.3,
                         10, () {
-                        _navigateTimeSelect(context, modelMeetingRoom);
-                      }),
+                      _navigateTimeSelect(context, modelMeetingRoom);
+                    }),
+                    SizedBox(
+                      height: 30,
+                    ),
+                    GradientButton(
+                        Column(
+                          mainAxisAlignment:
+                          MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Text(
+                              '예약',
+                              style: TextStyle(
+                                  color: color_white,
+                                  fontSize: 25,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                            Text(
+                              '회의실을 예약합니다.',
+                              style: TextStyle(
+                                  color: color_white, fontSize: 17),
+                            ),
+                          ],
+                        ),
+                        color_gradientBlueStart,
+                        color_gradientBlueEnd,
+                        70,
+                        deviceWidth / 1.3,
+                        10, () {
+                      _navigateReserve(context, modelMeetingRoom);
+                    }),
+                  ],
+                ),
 
                 // //더이상 사용안하는 버튼
                 // GradientButton(
@@ -176,16 +166,77 @@ class _ScreenRoomState extends State<ScreenRoom> {
               ],
             ),
           ),
+          SizedBox(
+            height: 20,
+          ),
+          StreamBuilder(
+            stream: Firestore.instance
+                .collection('reserves')
+                .where('roomNum', isEqualTo: modelMeetingRoom.roomNum)
+                .snapshots(),
 
-          Expanded(
-            child: Container(
-                child: Center(
-              child: WidgetCurrentTime(),
-            )),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData)
+                return Center(child: CircularProgressIndicator());
+
+              final documents = snapshot.data.documents;
+
+              return ListView.builder(
+                itemCount: documents.length,
+                itemBuilder: (context, index) {
+                  final doc = documents[index];
+
+                  ModelReserve modelReserve = new ModelReserve(roomNum: doc['roomNum'],
+                      date: doc['date'].toDate(),
+                      start: doc['start'],
+                      end: doc['end'],
+                      userNum: doc['userNum']);
+
+                  return _reserveListItem(modelReserve);
+                },
+                physics: NeverScrollableScrollPhysics(),
+                shrinkWrap: true,
+              );
+            },
           )
         ],
       ),
     );
+  }
+
+  Widget _reserveListItem(ModelReserve modelReserve) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+      height: 100,
+      decoration: BoxDecoration(
+        color: color_white,
+        boxShadow: [
+          BoxShadow(
+              color: color_shadowGrey, offset: Offset(0.1, 5.9), blurRadius: 9),
+        ],
+      ),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            Text(
+                ' ${_formatTime(modelReserve.start)} 부터 ~  ${_formatTime(
+                    modelReserve.end)} 까지',
+                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
+            Text('예약자 : ${modelReserve.userNum}'),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _formatTime(int time) {
+    if (time == 0 || time == null) {
+      return '00:00';
+    }
+    var hours = time ~/ 12;
+    var minutes = (time % 12) * 5;
+    return '$hours:$minutes';
   }
 
   _navigateTimeSelect(BuildContext context, ModelMeetingRoom roomModel) async {
@@ -201,6 +252,12 @@ class _ScreenRoomState extends State<ScreenRoom> {
     if (result == 'selected') {
       Navigator.pop(context, 'roomfinish');
     }
+  }
+
+  _navigateReserve(BuildContext context, ModelMeetingRoom roomModel) {
+    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) {
+      return ScreenReserve(roomModel);
+    }));
   }
 
   @override

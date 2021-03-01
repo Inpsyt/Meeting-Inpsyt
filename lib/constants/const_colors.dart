@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-//tone
+//tones
 final Color color_white = Colors.white;
 final Color color_dark = Color(0xDD000000);
 final Color color_lightBlue = Color(0xFFEBEFFF);
@@ -12,6 +12,10 @@ final Color color_shadowGrey = Color(0x99b8b8b8);
 final Color color_deepShadowGrey = Colors.grey;
 final Color color_deepGrey = Color(0xFF777777);
 
+
+//transparents
+final color_trans_base = Color.fromRGBO(255, 255, 255, 0.3);
+final Color color_trans_skyBlue = Color(0xCC5C8BF7);
 
 
 //gradients

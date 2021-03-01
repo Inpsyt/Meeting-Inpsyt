@@ -406,7 +406,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
                   room.isUsing
                       ? room.time.substring(10, room.time.length).trim() +
                           '부터 사용가능'
-                      : '현재 사용가능',
+                      : '비어있음',
                   style: TextStyle(fontSize: 16),
                 )
               ],
