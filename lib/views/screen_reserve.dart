@@ -90,6 +90,7 @@ class _ScreenReserveState extends State<ScreenReserve> {
             handlerColor: Colors.transparent,
             handlerOutterRadius: 12.0,
             sliderStrokeWidth: 12.0,
+
           ),
         ),
       );
@@ -115,6 +116,8 @@ class _ScreenReserveState extends State<ScreenReserve> {
         handlerColor: baseColor,
         handlerOutterRadius: 13.0,
         sliderStrokeWidth: 12.0,
+        showHandlerOutter: true,
+        shouldCountLaps: false,
         child: Padding(
           padding: const EdgeInsets.all(42.0),
           child: Center(
@@ -213,7 +216,7 @@ class _ScreenReserveState extends State<ScreenReserve> {
 
 
 
-        if (_start >= element['start'] && _start <= element['end']) {
+        if ((_start >= element['start'] && _start <= element['end'])||(_start <= element['start'] && _end >= element['end'])||(_end >= element['start'] && _end <= element['end'])) {
 
           await showDialog(
               context: context,
@@ -226,43 +229,12 @@ class _ScreenReserveState extends State<ScreenReserve> {
                   ],
                 );
               });
+
           return;
-        }
 
-        if (_end >= element['start'] && _end <= element['end']) {
-
-          await showDialog(
-              context: context,
-              builder: (context) {
-                return AlertDialog(
-                  title: Text('시간 겹침'),
-                  content: Text('종료시간이 다른 예약과 겹칩니다. \n다른 시간으로 선택해주세요.'),
-                  actions: [
-                    FlatButton(onPressed: (){Navigator.pop(context,false);}, child: Text('OK')),
-                  ],
-                );
-              });
-          return;
-        }
-
-        if (_start <= element['start'] && _end >= element['end']) {
-
-          await showDialog(
-              context: context,
-              builder: (context) {
-                return AlertDialog(
-                  title: Text('시간 겹침'),
-                  content: Text('시간이 다른 예약과 겹칩니다. \n다른 시간으로 선택해주세요.'),
-                  actions: [
-                    FlatButton(onPressed: (){Navigator.pop(context,false);}, child: Text('OK')),
-                  ],
-                );
-              });
-          return;
         }
       });
     });
-
 
     });
   }
