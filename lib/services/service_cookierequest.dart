@@ -67,7 +67,7 @@ class ServiceCookieRequest{
         throw new Exception("Error while fetching data : ${statusCode}");
       }
 
-      print(res);
+      //print(res);
 
       return res;
 

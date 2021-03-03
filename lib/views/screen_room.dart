@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:html/parser.dart';
 import 'package:inpsyt_meeting/constants/const_colors.dart';
@@ -16,31 +19,33 @@ class ScreenRoom extends StatefulWidget {
   final ModelMeetingRoom modelMeetingRoom;
   final ServiceCookieRequest _serviceCookieRequest;
 
-  ScreenRoom(this.modelMeetingRoom,this._serviceCookieRequest);
+  ScreenRoom(this.modelMeetingRoom, this._serviceCookieRequest);
 
   @override
-  _ScreenRoomState createState() => _ScreenRoomState(this.modelMeetingRoom,_serviceCookieRequest);
+  _ScreenRoomState createState() =>
+      _ScreenRoomState(this.modelMeetingRoom, _serviceCookieRequest);
 }
 
 class _ScreenRoomState extends State<ScreenRoom> {
   final ModelMeetingRoom modelMeetingRoom;
   ServiceCookieRequest _serviceCookieRequest;
   DateTime selectedDate;
+  ValueKey<DateTime> forceRebuild;
 
-  _ScreenRoomState(this.modelMeetingRoom,this._serviceCookieRequest);
+  _ScreenRoomState(this.modelMeetingRoom, this._serviceCookieRequest);
 
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
 
-
+    selectedDate = DateTime.now();
+  }
 
   @override
   Widget build(BuildContext context) {
-
     double deviceWidth = MediaQuery.of(context).size.width;
     double deviceHeight = MediaQuery.of(context).size.height;
-
-    selectedDate = DateTime.now();
-
-
 
     return Scaffold(
       appBar: AppBar(
@@ -121,8 +126,7 @@ class _ScreenRoomState extends State<ScreenRoom> {
                           SizedBox(
                             height: 30,
                           ),
-                          
-                          
+
                           //예약기능은 나중에 추가하는 걸로
                           /*
                           GradientButton(
@@ -151,7 +155,7 @@ class _ScreenRoomState extends State<ScreenRoom> {
                               10, () {
                             _navigateReserve(context, modelMeetingRoom);
                           }),
-                          
+
                            */
                         ],
                       ),
@@ -183,36 +187,107 @@ class _ScreenRoomState extends State<ScreenRoom> {
           SizedBox(
             height: 20,
           ),
+          Container(
+            margin: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+            padding: EdgeInsets.symmetric(horizontal: 6),
+            decoration: BoxDecoration(
+              color: color_white,
+              boxShadow: [
+                BoxShadow(
+                    color: color_shadowGrey,
+                    offset: Offset(0.1, 5.9),
+                    blurRadius: 9),
+              ],
+            ),
+            child: Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Center(
+                        child: Text(
+                      '지오유 예약 목록',
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    )),
+                    SizedBox(
+                      height: 10,
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        _selectDate(context);
+                      },
+                      child: Row(
+                        mainAxisSize: MainAxisSize.max,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            selectedDate.toString().substring(0, 10),
+                            style: TextStyle(
+                              fontSize: 18,
+                            ),
+                          ),
+                          SizedBox(
+                            width: 10,
+                          ),
+                          Icon(Icons.calendar_today)
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Container(
+            key: forceRebuild,
+            child: FutureBuilder(
+              future: _getReservesList(_serviceCookieRequest),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return Center(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 30),
+                      child: CircularProgressIndicator(),
+                    ),
+                  );
+                }
 
+                List<String> listReserves = snapshot.data;
+                for (int i = 0; i < listReserves.length; i++) {
+                  //+문자 제거 및 공백제거 가공단계
+                  listReserves[i] = listReserves[i].replaceAll('+', '').trim();
+                }
+                listReserves.remove('');
 
-
-          FutureBuilder(
-            future: _getReservesList(_serviceCookieRequest),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) {
-                return Center(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 30),
-                    child: CircularProgressIndicator(),
-                  ),
-                );
-              }
-
-              List<String> listReserves = snapshot.data;
-              for(int i =0; i<listReserves.length; i++){ //+문자 제거 및 공백제거 가공단계
-                listReserves[i] = listReserves[i].replaceAll('+', '').trim();
-              }
-              listReserves.remove('');
-
-
-              return ListView.builder(
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  itemCount: listReserves.length,
-                  itemBuilder: (context, index) {
-                    return _reserveListItem(listReserves[index]);
-                  });
-            },
+                return ListView.builder(
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    itemCount: listReserves.length,
+                    itemBuilder: (context, index) {
+                      return _reserveListItem(listReserves[index]);
+                    });
+              },
+            ),
+          ),
+          SizedBox(height: 20,),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              MaterialButton(
+                onPressed: () {},
+                color: color_skyBlue,
+                textColor: Colors.white,
+                child: Icon(
+                  Icons.add,
+                  size: 20,
+                ),
+                padding: EdgeInsets.all(16),
+                elevation: 5,
+                shape: CircleBorder( ),
+              )
+            ],
           )
 
           /*
@@ -246,52 +321,61 @@ class _ScreenRoomState extends State<ScreenRoom> {
     );
   }
 
-  Future _loginGroupWare() async{
+  Future _loginGroupWare() async {
     _serviceCookieRequest = ServiceCookieRequest();
     await _serviceCookieRequest.get(
         'http://gw.hakjisa.co.kr/LoginOK?CorpID=xxxxxxxxxx&UserID=dev%40hakjisa.co.kr&UserPass=gkrwltk6462%21%40&UserOTP=');
-
   }
 
-  Future<List<String>> _getReservesList(ServiceCookieRequest serviceCookieRequest) async {
-
-    int currentWeekNum = Jiffy(selectedDate).week+1;
+  Future<List<String>> _getReservesList(
+      ServiceCookieRequest serviceCookieRequest) async {
+    int currentWeekNum = Jiffy(selectedDate).week + 1;
 
     int currentWeek = 4;
 
     int webRoomNum = -1;
 
-    switch(Jiffy(selectedDate).format('EEEE').trim()){
-      case 'Sunday' : currentWeek = 4;
-      break;
-      case 'Monday' : currentWeek = 5;
-      break;
-      case 'Tuesday' : currentWeek = 6;
-      break;
-      case 'Wednesday' : currentWeek = 7;
-      break;
-      case 'Thursday' : currentWeek = 8;
-      break;
-      case 'Friday' : currentWeek = 9;
-      break;
-      case 'Saturday' : currentWeek = 10;
-      break;
+    switch (Jiffy(selectedDate).format('EEEE').trim()) {
+      case 'Sunday':
+        currentWeek = 4;
+        break;
+      case 'Monday':
+        currentWeek = 5;
+        break;
+      case 'Tuesday':
+        currentWeek = 6;
+        break;
+      case 'Wednesday':
+        currentWeek = 7;
+        break;
+      case 'Thursday':
+        currentWeek = 8;
+        break;
+      case 'Friday':
+        currentWeek = 9;
+        break;
+      case 'Saturday':
+        currentWeek = 10;
+        break;
     }
 
-    switch(modelMeetingRoom.roomNum){
-      case 1: webRoomNum = 3;
-      break;
-      case 2: webRoomNum = -1;
-      break;
-      case 3: webRoomNum = 1;
-      break;
-      case 4: webRoomNum = 2;
+    switch (modelMeetingRoom.roomNum) {
+      case 1:
+        webRoomNum = 3;
+        break;
+      case 2:
+        webRoomNum = -1;
+        break;
+      case 3:
+        webRoomNum = 1;
+        break;
+      case 4:
+        webRoomNum = 2;
     }
 
-    if(webRoomNum == -1){
+    if (webRoomNum == -1) {
       return new List<String>();
     }
-
 
     String rawHtml;
     rawHtml = await serviceCookieRequest.get(
@@ -316,18 +400,33 @@ class _ScreenRoomState extends State<ScreenRoom> {
     var tableArea =
         elements.children[1].children[0]; //td의 자식 4가지 중 2번째 table 의 tbody
 
-
     //여기가 진짜 테이블 위치에 관여
-    String sCurrentReserves = tableArea.children[webRoomNum].children[currentWeek].text;
+    String sCurrentReserves =
+        tableArea.children[webRoomNum].children[currentWeek].text;
 
     return sCurrentReserves.split('[승인]');
+  }
 
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime d = await showDatePicker(
+      //we wait for the dialog to return
+      context: context,
+      initialDate: selectedDate,
+      firstDate: DateTime(2015),
+      lastDate: DateTime(2025),
+    );
+    if (d != null) //if the user has selected a date
+      setState(() {
+        // we format the selected date and assign it to the state variable
+        selectedDate = d;
+        forceRebuild = ValueKey(DateTime.now()); //위젯 강제 새로고침
+      });
   }
 
   Widget _reserveListItem(reserveContent) {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-      padding: EdgeInsets.symmetric(horizontal: 6),
+      padding: EdgeInsets.symmetric(horizontal: 10),
       height: 100,
       decoration: BoxDecoration(
         color: color_white,
@@ -340,20 +439,12 @@ class _ScreenRoomState extends State<ScreenRoom> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            Text(reserveContent,
-                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
+            Text(reserveContent, style: TextStyle(fontSize: 17)),
           ],
         ),
       ),
     );
   }
-
-
-
-
-
-
-
 
   //////////////////////////한동안 지유오쪽 서버의 데이터를 띄우도록 하기 때문에 사용x
 
