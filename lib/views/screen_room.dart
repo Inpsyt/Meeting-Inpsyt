@@ -1,38 +1,46 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:html/parser.dart';
 import 'package:inpsyt_meeting/constants/const_colors.dart';
 import 'package:inpsyt_meeting/models/model_reserve.dart';
+import 'package:inpsyt_meeting/services/service_cookierequest.dart';
 import 'package:inpsyt_meeting/views/screen_reserve.dart';
 
 import 'package:inpsyt_meeting/views/screen_timeselect.dart';
 import 'package:inpsyt_meeting/views/widgets/widget_buttons.dart';
 import 'package:inpsyt_meeting/models/model_meetingroom.dart';
 import 'package:inpsyt_meeting/views/widgets/widget_labels.dart';
+import 'package:jiffy/jiffy.dart';
 
 class ScreenRoom extends StatefulWidget {
   final ModelMeetingRoom modelMeetingRoom;
+  final ServiceCookieRequest _serviceCookieRequest;
 
-  ScreenRoom(this.modelMeetingRoom);
+  ScreenRoom(this.modelMeetingRoom,this._serviceCookieRequest);
 
   @override
-  _ScreenRoomState createState() => _ScreenRoomState(this.modelMeetingRoom);
+  _ScreenRoomState createState() => _ScreenRoomState(this.modelMeetingRoom,_serviceCookieRequest);
 }
 
 class _ScreenRoomState extends State<ScreenRoom> {
   final ModelMeetingRoom modelMeetingRoom;
+  ServiceCookieRequest _serviceCookieRequest;
+  DateTime selectedDate;
 
-  _ScreenRoomState(this.modelMeetingRoom);
+  _ScreenRoomState(this.modelMeetingRoom,this._serviceCookieRequest);
+
+
+
 
   @override
   Widget build(BuildContext context) {
-    double deviceWidth = MediaQuery
-        .of(context)
-        .size
-        .width;
-    double deviceHeight = MediaQuery
-        .of(context)
-        .size
-        .height;
+
+    double deviceWidth = MediaQuery.of(context).size.width;
+    double deviceHeight = MediaQuery.of(context).size.height;
+
+    selectedDate = DateTime.now();
+
+
 
     return Scaffold(
       appBar: AppBar(
@@ -81,66 +89,72 @@ class _ScreenRoomState extends State<ScreenRoom> {
                 ),
                 modelMeetingRoom.isUsing
                     ? Text(
-                  '사용자 : ' + modelMeetingRoom.userNum,
-                  style: TextStyle(fontSize: 17),
-                )
+                        '사용자 : ' + modelMeetingRoom.userNum,
+                        style: TextStyle(fontSize: 17),
+                      )
                     : Column(
-                  children: [
-                    GradientButton(
-                        Column(
-                          children: [
-                            Text(
-                              '체크인',
-                              style: TextStyle(
-                                  color: color_white,
-                                  fontSize: 25,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                            Text(
-                              '회의실 이용을 시작합니다',
-                              style: TextStyle(
-                                  color: color_white, fontSize: 17),
-                            ),
-                          ],
-                        ),
-                        color_gradientBlueStart,
-                        color_gradientBlueEnd,
-                        70,
-                        deviceWidth / 1.3,
-                        10, () {
-                      _navigateTimeSelect(context, modelMeetingRoom);
-                    }),
-                    SizedBox(
-                      height: 30,
-                    ),
-                    GradientButton(
-                        Column(
-                          mainAxisAlignment:
-                          MainAxisAlignment.spaceEvenly,
-                          children: [
-                            Text(
-                              '예약',
-                              style: TextStyle(
-                                  color: color_white,
-                                  fontSize: 25,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                            Text(
-                              '회의실을 예약합니다.',
-                              style: TextStyle(
-                                  color: color_white, fontSize: 17),
-                            ),
-                          ],
-                        ),
-                        color_gradientBlueStart,
-                        color_gradientBlueEnd,
-                        70,
-                        deviceWidth / 1.3,
-                        10, () {
-                      _navigateReserve(context, modelMeetingRoom);
-                    }),
-                  ],
-                ),
+                        children: [
+                          GradientButton(
+                              Column(
+                                children: [
+                                  Text(
+                                    '체크인',
+                                    style: TextStyle(
+                                        color: color_white,
+                                        fontSize: 25,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                  Text(
+                                    '회의실 이용을 시작합니다',
+                                    style: TextStyle(
+                                        color: color_white, fontSize: 17),
+                                  ),
+                                ],
+                              ),
+                              color_gradientBlueStart,
+                              color_gradientBlueEnd,
+                              70,
+                              deviceWidth / 1.3,
+                              10, () {
+                            _navigateTimeSelect(context, modelMeetingRoom);
+                          }),
+                          SizedBox(
+                            height: 30,
+                          ),
+                          
+                          
+                          //예약기능은 나중에 추가하는 걸로
+                          /*
+                          GradientButton(
+                              Column(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  Text(
+                                    '예약',
+                                    style: TextStyle(
+                                        color: color_white,
+                                        fontSize: 25,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                  Text(
+                                    '회의실을 예약합니다.',
+                                    style: TextStyle(
+                                        color: color_white, fontSize: 17),
+                                  ),
+                                ],
+                              ),
+                              color_gradientBlueStart,
+                              color_gradientBlueEnd,
+                              70,
+                              deviceWidth / 1.3,
+                              10, () {
+                            _navigateReserve(context, modelMeetingRoom);
+                          }),
+                          
+                           */
+                        ],
+                      ),
 
                 // //더이상 사용안하는 버튼
                 // GradientButton(
@@ -169,6 +183,39 @@ class _ScreenRoomState extends State<ScreenRoom> {
           SizedBox(
             height: 20,
           ),
+
+
+
+          FutureBuilder(
+            future: _getReservesList(_serviceCookieRequest),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 30),
+                    child: CircularProgressIndicator(),
+                  ),
+                );
+              }
+
+              List<String> listReserves = snapshot.data;
+              for(int i =0; i<listReserves.length; i++){ //+문자 제거 및 공백제거 가공단계
+                listReserves[i] = listReserves[i].replaceAll('+', '').trim();
+              }
+              listReserves.remove('');
+
+
+              return ListView.builder(
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
+                  itemCount: listReserves.length,
+                  itemBuilder: (context, index) {
+                    return _reserveListItem(listReserves[index]);
+                  });
+            },
+          )
+
+          /*
           StreamBuilder(
             stream: Firestore.instance
                 .collection('reserves')
@@ -184,27 +231,140 @@ class _ScreenRoomState extends State<ScreenRoom> {
               return ListView.builder(
                 itemCount: documents.length,
                 itemBuilder: (context, index) {
-                  final doc = documents[index];
 
-                  ModelReserve modelReserve = new ModelReserve(roomNum: doc['roomNum'],
-                      date: doc['date'].toDate(),
-                      start: doc['start'],
-                      end: doc['end'],
-                      userNum: doc['userNum']);
 
-                  return _reserveListItem(modelReserve);
+                  return _reserveListItem(documents[index]);
                 },
                 physics: NeverScrollableScrollPhysics(),
                 shrinkWrap: true,
               );
             },
           )
+           */
         ],
       ),
     );
   }
 
-  Widget _reserveListItem(ModelReserve modelReserve) {
+  Future _loginGroupWare() async{
+    _serviceCookieRequest = ServiceCookieRequest();
+    await _serviceCookieRequest.get(
+        'http://gw.hakjisa.co.kr/LoginOK?CorpID=xxxxxxxxxx&UserID=dev%40hakjisa.co.kr&UserPass=gkrwltk6462%21%40&UserOTP=');
+
+  }
+
+  Future<List<String>> _getReservesList(ServiceCookieRequest serviceCookieRequest) async {
+
+    int currentWeekNum = Jiffy(selectedDate).week+1;
+
+    int currentWeek = 4;
+
+    int webRoomNum = -1;
+
+    switch(Jiffy(selectedDate).format('EEEE').trim()){
+      case 'Sunday' : currentWeek = 4;
+      break;
+      case 'Monday' : currentWeek = 5;
+      break;
+      case 'Tuesday' : currentWeek = 6;
+      break;
+      case 'Wednesday' : currentWeek = 7;
+      break;
+      case 'Thursday' : currentWeek = 8;
+      break;
+      case 'Friday' : currentWeek = 9;
+      break;
+      case 'Saturday' : currentWeek = 10;
+      break;
+    }
+
+    switch(modelMeetingRoom.roomNum){
+      case 1: webRoomNum = 3;
+      break;
+      case 2: webRoomNum = -1;
+      break;
+      case 3: webRoomNum = 1;
+      break;
+      case 4: webRoomNum = 2;
+    }
+
+    if(webRoomNum == -1){
+      return new List<String>();
+    }
+
+
+    String rawHtml;
+    rawHtml = await serviceCookieRequest.get(
+        'http://gw.hakjisa.co.kr/RsvObjMgr/RsvObj_List?Arrow=&CrdNo=&SelDate=&ViewDate=&ViewSeq=&cmbCateNo=0&iYear=2021&iWeek=${currentWeekNum.toString()}&SearchTxt=');
+
+    var parsedHtml = parse(rawHtml);
+
+    var elements = parsedHtml
+        .getElementsByTagName('tbody')[0]
+        .children[1] //자식들인 tr 2개중 2번째꺼
+        .children[0] //두번째 tr의 자식인 td
+        .children[0] //td의 자식인 table
+        .children[0] //table의 자식인 tbody
+        .children[0] //tbody의 자식인 tr 세개 중 첫번째
+        .children[2] //tr 의 자식인 세번째 td
+        .children[0] //RsvObj_List 바로 밑에 있는 table
+        .children[0] //table의 자식인 tbody
+        .children[1] //tbody의 자식인 3 tr중 2번째
+        .children[0]; //tr의 자식 td (여기서부터 진짜 시작)
+
+    var nameArea = elements.children[0]; //td의 자식 4가지 중 1번쨰 form
+    var tableArea =
+        elements.children[1].children[0]; //td의 자식 4가지 중 2번째 table 의 tbody
+
+
+    //여기가 진짜 테이블 위치에 관여
+    String sCurrentReserves = tableArea.children[webRoomNum].children[currentWeek].text;
+
+    return sCurrentReserves.split('[승인]');
+
+  }
+
+  Widget _reserveListItem(reserveContent) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+      padding: EdgeInsets.symmetric(horizontal: 6),
+      height: 100,
+      decoration: BoxDecoration(
+        color: color_white,
+        boxShadow: [
+          BoxShadow(
+              color: color_shadowGrey, offset: Offset(0.1, 5.9), blurRadius: 9),
+        ],
+      ),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            Text(reserveContent,
+                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
+          ],
+        ),
+      ),
+    );
+  }
+
+
+
+
+
+
+
+
+  //////////////////////////한동안 지유오쪽 서버의 데이터를 띄우도록 하기 때문에 사용x
+
+  Widget _fireReserveListItem(dynamic doc) {
+    ModelReserve modelReserve = new ModelReserve(
+        roomNum: doc['roomNum'],
+        date: doc['date'].toDate(),
+        start: doc['start'],
+        end: doc['end'],
+        userNum: doc['userNum']);
+
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
       height: 100,
@@ -220,8 +380,7 @@ class _ScreenRoomState extends State<ScreenRoom> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             Text(
-                ' ${_formatTime(modelReserve.start)} 부터 ~  ${_formatTime(
-                    modelReserve.end)} 까지',
+                ' ${_formatTime(modelReserve.start)} 부터 ~  ${_formatTime(modelReserve.end)} 까지',
                 style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
             Text('예약자 : ${modelReserve.userNum}'),
           ],

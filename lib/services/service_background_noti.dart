@@ -54,19 +54,11 @@ void onStart() {
         });
 
 
-
-
-
-
-
-
     //타이머 주기 시작
     //Start periodic
     timerObject = Timer.periodic(Duration(milliseconds: countDonwDuration),
         (timer) async {
       if (!(await service.isServiceRunning())) timerObject.cancel();
-
-
 
       if(currentTimeCheckCNT >= 10){
         currentTime = DateTime.now();
@@ -98,7 +90,6 @@ void onStart() {
       print('ServiceNoti: roomNum: ' +
           roomNum.toString()); //아이폰에서는 방번호는 잘 불러오나, DB에서 값을 못 가져옴
       leftTime = endTime.difference(currentTime).inMinutes;
-
 
       service.sendData({
         'leftTime': leftTime.toString(),

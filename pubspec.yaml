@@ -33,9 +33,11 @@ dependencies:
   connectivity: ^2.0.2
   qrscan: ^0.2.22
   uni_links: ^0.4.0
-  permission_handler: ^5.0.1+1
+  permission_handler: ^5.0.1+1sync
   flutter_local_notifications: ^1.4.4+2
   flutter_circular_slider:
+  html:
+  jiffy: ^3.0.1
 
   ntp: ^1.0.7
   shared_preferences: ^0.5.3

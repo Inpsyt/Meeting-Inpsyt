@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:inpsyt_meeting/constants/const_colors.dart';
 import 'package:inpsyt_meeting/services/service_background_noti.dart';
+import 'package:inpsyt_meeting/services/service_cookierequest.dart';
 
 import 'package:inpsyt_meeting/views/screen_firstAuthen.dart';
 import 'package:inpsyt_meeting/views/screen_room.dart';
@@ -31,6 +32,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
   final Firestore db = Firestore.instance; //cfs
 
 
+  ServiceCookieRequest _serviceCookieRequest;
   Timer updateTimer;
   List<ModelMeetingRoom> roomList;
   SharedPreferences _preferences;
@@ -38,6 +40,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
   bool _youAreUsingNow = true; //오프라인 실행시 또는 체크아웃시 방 들어가지는 버그 수정을 위해 true
   bool _nowInRoom = false;
   StreamSubscription _sub;
+
 
   //network connectivity
   StreamSubscription _connectionSub;
@@ -166,11 +169,18 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
     setState(() {});
   }
 
+  Future _loginGroupWare() async{
+    _serviceCookieRequest = ServiceCookieRequest();
+    await _serviceCookieRequest.get(
+        'http://gw.hakjisa.co.kr/LoginOK?CorpID=xxxxxxxxxx&UserID=dev%40hakjisa.co.kr&UserPass=gkrwltk6462%21%40&UserOTP=');
+  }
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
 
+    _loginGroupWare();
     _getCheckUserNumPref();
 
     initConnectivity();
@@ -212,8 +222,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
     print("payload: ${message.payload}");
 
   }
-
-   */
+  */
 
   @override
   Widget build(BuildContext context) {
@@ -439,7 +448,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
     } else {
       await Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (BuildContext context) => new ScreenRoom(room),
+          builder: (BuildContext context) => new ScreenRoom(room,_serviceCookieRequest),
         ),
       );
       _nowInRoom = false;
@@ -462,7 +471,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
       //이미 회의중이라면 예약조차 몬하게
       await Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (BuildContext context) => new ScreenRoom(room),
+          builder: (BuildContext context) => new ScreenRoom(room,_serviceCookieRequest),
         ),
       );
       _nowInRoom = false;
