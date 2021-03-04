@@ -1,11 +1,13 @@
 import 'dart:async';
 
-import 'package:cloud_firestore/cloud_firestore.dart';  //cfs
+import 'package:cloud_firestore/cloud_firestore.dart'; //cfs
 import 'package:connectivity/connectivity.dart';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
+import 'package:html/parser.dart';
 import 'package:inpsyt_meeting/constants/const_colors.dart';
 import 'package:inpsyt_meeting/services/service_background_noti.dart';
 import 'package:inpsyt_meeting/services/service_cookierequest.dart';
@@ -20,8 +22,12 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:ntp/ntp.dart';
+import 'package:store_launcher/store_launcher.dart';
 import 'package:uni_links/uni_links.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
+import 'package:url_launcher/url_launcher.dart';
+import 'package:http/http.dart' as http;
+
 
 class ScreenMeetingRooms extends StatefulWidget {
   @override
@@ -31,6 +37,8 @@ class ScreenMeetingRooms extends StatefulWidget {
 class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
   final Firestore db = Firestore.instance; //cfs
 
+  final String sCurrentAppVersion = '0.0.8';
+
   Timer updateTimer;
   List<ModelMeetingRoom> roomList;
   SharedPreferences _preferences;
@@ -39,12 +47,10 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
   bool _nowInRoom = false;
   StreamSubscription _sub;
 
-
   //network connectivity
   StreamSubscription _connectionSub;
   bool _isNetworkConnected = false;
   final Connectivity _connectivity = Connectivity();
-
 
   String _output = 'Empty Scan Code'; //qr 인식용
 
@@ -56,7 +62,6 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
     '0x04c87c22422b80',
     '0x04c88022422b80'
   ];
-
 
   _getCheckUserNumPref() async {
     _preferences = await SharedPreferences.getInstance();
@@ -80,8 +85,6 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
     });
   }
 
-
-
   Future _scan() async {
     await Permission.camera.request();
     //스캔 시작 - 이때 스캔 될때까지 blocking
@@ -93,13 +96,6 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
       _entryRoomWithUni(_output);
     });
   }
-
-
-
-
-
-
-
 
   Future<Null> initUniLisks() async {
     String initialLink;
@@ -119,17 +115,12 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
     });
   }
 
-
-
-
   _checkRoomsStatus() async {
     //사용중인 방이 시간이 지났는지 아닌지를 판별
     // DateTime curTime = DateTime.now();
 
     DateTime curTime = await NTP.now(); //네트워크 시간에 맡기기
     print('ScreenMeetingRooms : 네트워크시간 감지됨 NTP : ' + curTime.toString());
-
-
 
     await db //판별을 위해 서버 접속
         .collection('rooms')
@@ -167,17 +158,22 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
     setState(() {});
   }
 
-
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
 
+
+    SchedulerBinding.instance.addPostFrameCallback((_) => _checkAppUpdate());
+
+
     ServiceCookieRequest.loginGroupWare();
     _getCheckUserNumPref();
 
+
     initConnectivity();
-    _connectionSub = _connectivity.onConnectivityChanged.listen((_updateConnectionStatus));
+    _connectionSub =
+        _connectivity.onConnectivityChanged.listen((_updateConnectionStatus));
 
     //_nfcReaderSet();
 
@@ -189,8 +185,6 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
       print('ScreenMeetingRooms: 문서바꼇당 서버접속 2회');
       _checkRoomsStatus();
     });
-
-
   }
 
   @override
@@ -199,7 +193,6 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
     // TODO: implement dispose
     super.dispose();
   }
-
 
   /*
   _nfcReaderSet() async {
@@ -225,49 +218,45 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
 
 
     return Scaffold(
-
-      floatingActionButton:
-      DiamondNotchedFab(
-        onPressed: () {
-          _scan();
-        },
-        tooltip: 'QR스캔',
-        borderRadius: 14,
-        child: Padding(
-            padding: EdgeInsets.all(13),
-            child: Image.asset('assets/images/qricon.png')),
-      ),
-      
-      
-      body: Column(
-        children: [
-          Container(
-            //상단부 영역
-            height: 120,
-            decoration: BoxDecoration(
-              boxShadow: [
-                BoxShadow(
-                    color: color_deepShadowGrey,
-                    blurRadius: 5,
-                    offset: Offset(0.1, 0.9))
-              ],
-              color: color_skyBlue,
-            ),
-            child: Stack(
-              children: [
-                Positioned(
-                  child: Text(
-                    '이 자리에서\n회의실을 예약하세요',
-                    style: TextStyle(
-                        color: color_white,
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold),
+        floatingActionButton: DiamondNotchedFab(
+          onPressed: () {
+            _scan();
+          },
+          tooltip: 'QR스캔',
+          borderRadius: 14,
+          child: Padding(
+              padding: EdgeInsets.all(13),
+              child: Image.asset('assets/images/qricon.png')),
+        ),
+        body: Column(
+          children: [
+            Container(
+              //상단부 영역
+              height: 120,
+              decoration: BoxDecoration(
+                boxShadow: [
+                  BoxShadow(
+                      color: color_deepShadowGrey,
+                      blurRadius: 5,
+                      offset: Offset(0.1, 0.9))
+                ],
+                color: color_skyBlue,
+              ),
+              child: Stack(
+                children: [
+                  Positioned(
+                    child: Text(
+                      '이 자리에서\n회의실을 예약하세요',
+                      style: TextStyle(
+                          color: color_white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold),
+                    ),
+                    bottom: 15,
+                    left: 15,
                   ),
-                  bottom: 15,
-                  left: 15,
-                ),
 
-                /*
+                  /*
                 //설정버튼
                 Positioned(
                   child: GestureDetector(
@@ -284,7 +273,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
                 )
                  */
 
-                /* //사용자번호 확인용
+                  /* //사용자번호 확인용
                 Positioned(
                   child: Text(
                     '사용자: ' + _userNum,
@@ -298,57 +287,54 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
                 )
 
                  */
-              ],
+                ],
+              ),
             ),
-          ),
 
+            //하단부 리스트 영역
 
+            _isNetworkConnected
+                ? StreamBuilder<QuerySnapshot>(
+                    stream:
+                        db.collection('rooms').orderBy('roomNum').snapshots(),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+                        return CircularProgressIndicator();
+                      }
+                      final documents = snapshot.data.documents;
+                      return Expanded(
+                        child: ListView.builder(
+                            physics: BouncingScrollPhysics(
+                                parent: AlwaysScrollableScrollPhysics()),
+                            itemCount: documents.length,
+                            itemBuilder: (context, index) {
+                              final doc = documents[index];
 
+                              return _MeetingRoomItem(doc);
+                            }),
+                      );
+                    },
+                  )
+                : Expanded(
+                    child: Column(
+                    mainAxisSize: MainAxisSize.max,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircularProgressIndicator(),
+                      SizedBox(
+                        height: 30,
+                      ),
+                      Text(
+                        '네트워크 접속중..',
+                        style: TextStyle(fontSize: 20),
+                      )
+                    ],
+                  ))
 
-          //하단부 리스트 영역
-
-          _isNetworkConnected?
-          StreamBuilder<QuerySnapshot>(
-            stream: db.collection('rooms').orderBy('roomNum').snapshots(),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) {
-                return CircularProgressIndicator();
-              }
-              final documents = snapshot.data.documents;
-              return Expanded(
-                child: ListView.builder(
-                  physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-                    itemCount: documents.length,
-                    itemBuilder: (context, index) {
-                      final doc = documents[index];
-
-                      return _MeetingRoomItem(doc);
-                    }),
-              );
-            },
-          ):
-          Expanded(child:Column(
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CircularProgressIndicator(),
-              SizedBox(height: 30,),
-              Text('네트워크 접속중..',style: TextStyle(fontSize: 20),)
-            ],
-          ))
-
-
-          //cfs
-
-
-
-
-
-        ],
-      )
-    );
+            //cfs
+          ],
+        ));
   }
-
 
   //회의실 아이템
   Widget _MeetingRoomItem(DocumentSnapshot doc) {
@@ -421,12 +407,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
 
   //cfs
 
-
-
-
-
   //방에있는 실제 물리적인 형태로 접근을 하는 것이니 강제로 입장!
-
 
   _entryRoomForce(ModelMeetingRoom room) async {
     _nowInRoom = true;
@@ -434,8 +415,9 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
     if (room.isUsing && (room.userNum.trim() == _userNum)) {
       await Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (BuildContext context) => new ScreenStopWatch(room)//new ScreenStopWatch(room),
-        ),
+            builder: (BuildContext context) =>
+                new ScreenStopWatch(room) //new ScreenStopWatch(room),
+            ),
       );
       _nowInRoom = false;
     } else {
@@ -449,14 +431,16 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
   }
 
   _entryRoom(ModelMeetingRoom room) async {
+
     _nowInRoom = true;
     if (_userNum == '') return; //번호 입력 안하고 백키 누를 경우를 대비해 그냥 실행 방지
     if (room.isUsing &&
         (room.userNum.trim() == _userNum || _userNum == '현장기기')) {
       await Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (BuildContext context) => new ScreenStopWatch(room)//new ScreenStopWatch(room),
-        ),
+            builder: (BuildContext context) =>
+                new ScreenStopWatch(room) //new ScreenStopWatch(room),
+            ),
       );
       _nowInRoom = false;
     } else {
@@ -470,8 +454,6 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
       _nowInRoom = false;
     }
   }
-
-
 
   _entryRoomWithUni(String uri) {
     ModelMeetingRoom room;
@@ -489,15 +471,48 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
         });
   }
 
+  Future _checkAppUpdate() async {
 
+    var rawDoc = await http.get('http://jwk9022648.github.io/inpsyt_qr_website/appconfig');
+    var elements = parse(rawDoc.body);
+
+    //앱 버전이 서버 기준과 동일할 시 업데이트 표시 안함
+    if(sCurrentAppVersion == elements.children[0].text.trim()){
+      return;
+    }
+
+    await showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) {
+          return AlertDialog(
+            title: Text('업데이트 확인됨'),
+            content: Text('새 버전이 확인 되었습니다. \n업데이트를 진행해주세요.'),
+            actions: [
+
+              FlatButton(
+                child: Text('나중에'),
+                onPressed: () {
+                  Navigator.pop(context, false);
+                },
+              ),
+              FlatButton(
+                child: Text('업데이트',style: TextStyle(color: Colors.green)),
+                onPressed: () {
+                  StoreLauncher.openWithStore("com.kkumsoft.inpsyt_meeting");
+                },
+              ),
+            ],
+          );
+        });
+  }
 
 //network connection check ================================================
-  Future _updateConnectionStatus(ConnectivityResult result) async{
-
-    switch (result){
+  Future _updateConnectionStatus(ConnectivityResult result) async {
+    switch (result) {
       case ConnectivityResult.wifi:
       case ConnectivityResult.mobile:
-      //case ConnectivityResult.none:
+        //case ConnectivityResult.none:
         setState(() {
           _isNetworkConnected = true;
           _checkRoomsStatus(); // refresh rooms
@@ -510,16 +525,14 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
         });
         break;
     }
-
   }
 
-  Future initConnectivity() async{
+  Future initConnectivity() async {
     ConnectivityResult result;
 
-    try{
+    try {
       result = await _connectivity.checkConnectivity();
-
-    }on PlatformException catch(e){
+    } on PlatformException catch (e) {
       print(e.toString());
     }
     if (!mounted) {
@@ -529,9 +542,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
     return _updateConnectionStatus(result);
   }
 
-
-
-  /*
+/*
   _navigatePreferences()  {
 
      Navigator.push(context,

@@ -106,72 +106,20 @@ class _ScreenTimeSelectState extends State<ScreenTimeSelect> {
 
     print('timeselect');
     return Scaffold(
-      // floatingActionButton: DiamondNotchedFab(
-      //   onPressed: () {},
-      //   tooltip: 'QR스캔',
-      //   borderRadius: 14,
-      //   child: Padding(
-      //       padding: EdgeInsets.all(13),
-      //       child: Image.asset('assets/images/qricon.png')),
-      // ),
+      appBar: AppBar(
+        backgroundColor: color_skyBlue,
+        centerTitle: true,
+        title: Text(
+          modelMeetingRoom.roomName,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+              color: color_yellow, fontSize: 25, fontWeight: FontWeight.bold),
+        ),
+      ),
+
       body: Column(
         children: [
           //상단부 영역
-          Container(
-            //상단부 영역
-            height: 130,
-            decoration: BoxDecoration(
-              boxShadow: [
-                BoxShadow(
-                    color: Colors.grey, blurRadius: 8, offset: Offset(0.1, 0.9))
-              ],
-              color: color_skyBlue,
-            ),
-
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                SizedBox(
-                  height: 35,
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    IconButton(
-                        icon: Icon(
-                          Icons.arrow_back_ios,
-                          color: color_white,
-                        ),
-                        onPressed: () {
-                          Navigator.pop(context);
-                        }),
-                    Text(
-                      'Meeting Room',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          color: color_white,
-                          fontSize: 25,
-                          fontWeight: FontWeight.bold),
-                    ),
-                    IconButton(
-                        icon: Icon(
-                          Icons.arrow_back_ios,
-                          color: Colors.transparent,
-                        ),
-                        onPressed: () {}),
-                  ],
-                ),
-                Text(
-                  modelMeetingRoom.roomName,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                      color: color_yellow,
-                      fontSize: 25,
-                      fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-          ),
 
           SizedBox(
             height: 30,
