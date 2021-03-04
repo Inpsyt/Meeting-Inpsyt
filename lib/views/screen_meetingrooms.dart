@@ -31,8 +31,6 @@ class ScreenMeetingRooms extends StatefulWidget {
 class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
   final Firestore db = Firestore.instance; //cfs
 
-
-  ServiceCookieRequest _serviceCookieRequest;
   Timer updateTimer;
   List<ModelMeetingRoom> roomList;
   SharedPreferences _preferences;
@@ -169,18 +167,13 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
     setState(() {});
   }
 
-  Future _loginGroupWare() async{
-    _serviceCookieRequest = ServiceCookieRequest();
-    await _serviceCookieRequest.get(
-        'http://gw.hakjisa.co.kr/LoginOK?CorpID=xxxxxxxxxx&UserID=dev%40hakjisa.co.kr&UserPass=gkrwltk6462%21%40&UserOTP=');
-  }
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
 
-    _loginGroupWare();
+    ServiceCookieRequest.loginGroupWare();
     _getCheckUserNumPref();
 
     initConnectivity();
@@ -448,7 +441,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
     } else {
       await Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (BuildContext context) => new ScreenRoom(room,_serviceCookieRequest),
+          builder: (BuildContext context) => new ScreenRoom(room),
         ),
       );
       _nowInRoom = false;
@@ -471,7 +464,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
       //이미 회의중이라면 예약조차 몬하게
       await Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (BuildContext context) => new ScreenRoom(room,_serviceCookieRequest),
+          builder: (BuildContext context) => new ScreenRoom(room),
         ),
       );
       _nowInRoom = false;

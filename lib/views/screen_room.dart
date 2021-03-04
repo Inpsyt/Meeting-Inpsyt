@@ -14,32 +14,60 @@ import 'package:inpsyt_meeting/views/widgets/widget_buttons.dart';
 import 'package:inpsyt_meeting/models/model_meetingroom.dart';
 import 'package:inpsyt_meeting/views/widgets/widget_labels.dart';
 import 'package:jiffy/jiffy.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ScreenRoom extends StatefulWidget {
   final ModelMeetingRoom modelMeetingRoom;
-  final ServiceCookieRequest _serviceCookieRequest;
 
-  ScreenRoom(this.modelMeetingRoom, this._serviceCookieRequest);
+  ScreenRoom(this.modelMeetingRoom);
 
   @override
   _ScreenRoomState createState() =>
-      _ScreenRoomState(this.modelMeetingRoom, _serviceCookieRequest);
+      _ScreenRoomState(this.modelMeetingRoom);
 }
 
 class _ScreenRoomState extends State<ScreenRoom> {
   final ModelMeetingRoom modelMeetingRoom;
-  ServiceCookieRequest _serviceCookieRequest;
   DateTime selectedDate;
-  ValueKey<DateTime> forceRebuild;
+  ValueKey<DateTime> gioRebuild;
+  ValueKey<DateTime> bodyRebuild;
+  bool isOverTime = false;
+  bool isGioYuRoom = false;
+  Timer _timer;
+  int _start = 3;
 
-  _ScreenRoomState(this.modelMeetingRoom, this._serviceCookieRequest);
+  _ScreenRoomState(this.modelMeetingRoom);
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    startTimer();
+
+    if(modelMeetingRoom.roomNum ==1||modelMeetingRoom.roomNum==3||modelMeetingRoom.roomNum ==4)
+      isGioYuRoom = true;
 
     selectedDate = DateTime.now();
+  }
+
+  void startTimer() {
+    const oneSec = const Duration(seconds: 1);
+    _timer = new Timer.periodic(
+      oneSec,
+      (Timer timer) {
+        if (_start == 0) {
+          setState(() {
+            isOverTime = true;
+            gioRebuild = ValueKey(DateTime.now());
+            timer.cancel();
+          });
+        } else {
+          setState(() {
+            _start--;
+          });
+        }
+      },
+    );
   }
 
   @override
@@ -51,6 +79,18 @@ class _ScreenRoomState extends State<ScreenRoom> {
       appBar: AppBar(
         backgroundColor: color_skyBlue,
         centerTitle: true,
+        actions: [
+          isOverTime?Container():IconButton(icon: Icon(Icons.refresh), onPressed: (){
+
+            setState(() {
+              _timer.cancel();
+              isOverTime = false;
+              _start = 5;
+              startTimer();
+              bodyRebuild = ValueKey(DateTime.now());
+            });
+          })
+        ],
         title: Text(
           modelMeetingRoom.roomName,
           textAlign: TextAlign.center,
@@ -59,6 +99,7 @@ class _ScreenRoomState extends State<ScreenRoom> {
         ),
       ),
       body: ListView(
+        key : bodyRebuild,
         physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
         children: [
           SizedBox(
@@ -184,10 +225,12 @@ class _ScreenRoomState extends State<ScreenRoom> {
               ],
             ),
           ),
-          SizedBox(
-            height: 20,
-          ),
-          Container(
+
+
+
+          SizedBox(height: 30,),
+
+          !isGioYuRoom?Container():Container(
             margin: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
             padding: EdgeInsets.symmetric(horizontal: 6),
             decoration: BoxDecoration(
@@ -207,10 +250,10 @@ class _ScreenRoomState extends State<ScreenRoom> {
                   children: [
                     Center(
                         child: Text(
-                      '지오유 예약 목록',
-                      style:
+                          '지오유 예약 목록',
+                          style:
                           TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    )),
+                        )),
                     SizedBox(
                       height: 10,
                     ),
@@ -240,12 +283,51 @@ class _ScreenRoomState extends State<ScreenRoom> {
               ),
             ),
           ),
-          Container(
-            key: forceRebuild,
+
+
+          !isGioYuRoom?Container():Container(
+            key: gioRebuild,
             child: FutureBuilder(
-              future: _getReservesList(_serviceCookieRequest),
+              future: _getReservesList(),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
+                  if (isOverTime) {
+                    return Center(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(vertical: 30),
+                        child: Column(
+                          children: [
+
+
+
+                            SizedBox(height: 30,),
+                            Text(
+                              '네트워크에 문제가 발생했습니다.',
+                              style: TextStyle(fontSize: 18),
+                            ),
+                            SizedBox(
+                              height: 30,
+                            ),
+                            RaisedButton(
+                              child: Text(
+                                '다시시도',
+                              ),
+                              onPressed: () {
+                                _timer.cancel();
+                                isOverTime = false;
+                                _start = 7;
+                                startTimer();
+                                ServiceCookieRequest.loginGroupWare();
+                                gioRebuild = ValueKey(DateTime.now());
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
+
+                  print('ScreenRoom : not hasData');
                   return Center(
                     child: Padding(
                       padding: EdgeInsets.symmetric(vertical: 30),
@@ -254,6 +336,8 @@ class _ScreenRoomState extends State<ScreenRoom> {
                   );
                 }
 
+                _timer.cancel();
+
                 List<String> listReserves = snapshot.data;
                 for (int i = 0; i < listReserves.length; i++) {
                   //+문자 제거 및 공백제거 가공단계
@@ -261,34 +345,42 @@ class _ScreenRoomState extends State<ScreenRoom> {
                 }
                 listReserves.remove('');
 
-                return ListView.builder(
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    itemCount: listReserves.length,
-                    itemBuilder: (context, index) {
-                      return _reserveListItem(listReserves[index]);
-                    });
+                return Column(
+                  children: [
+
+
+
+                    ListView.builder(
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        itemCount: listReserves.length,
+                        itemBuilder: (context, index) {
+                          return _reserveListItem(listReserves[index]);
+                        }),
+
+                    SizedBox(height: 20,),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        MaterialButton(
+                          onPressed: () {_openZioyouReservePage();},
+                          color: color_skyBlue,
+                          textColor: Colors.white,
+                          child: Icon(
+                            Icons.add,
+                            size: 20,
+                          ),
+                          padding: EdgeInsets.all(16),
+                          elevation: 5,
+                          shape: CircleBorder(),
+                        )
+                      ],
+                    )
+                  ],
+                );
               },
             ),
           ),
-          SizedBox(height: 20,),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              MaterialButton(
-                onPressed: () {},
-                color: color_skyBlue,
-                textColor: Colors.white,
-                child: Icon(
-                  Icons.add,
-                  size: 20,
-                ),
-                padding: EdgeInsets.all(16),
-                elevation: 5,
-                shape: CircleBorder( ),
-              )
-            ],
-          )
 
           /*
           StreamBuilder(
@@ -307,7 +399,6 @@ class _ScreenRoomState extends State<ScreenRoom> {
                 itemCount: documents.length,
                 itemBuilder: (context, index) {
 
-
                   return _reserveListItem(documents[index]);
                 },
                 physics: NeverScrollableScrollPhysics(),
@@ -321,14 +412,9 @@ class _ScreenRoomState extends State<ScreenRoom> {
     );
   }
 
-  Future _loginGroupWare() async {
-    _serviceCookieRequest = ServiceCookieRequest();
-    await _serviceCookieRequest.get(
-        'http://gw.hakjisa.co.kr/LoginOK?CorpID=xxxxxxxxxx&UserID=dev%40hakjisa.co.kr&UserPass=gkrwltk6462%21%40&UserOTP=');
-  }
 
-  Future<List<String>> _getReservesList(
-      ServiceCookieRequest serviceCookieRequest) async {
+
+  Future<List<String>> _getReservesList() async {
     int currentWeekNum = Jiffy(selectedDate).week + 1;
 
     int currentWeek = 4;
@@ -362,23 +448,28 @@ class _ScreenRoomState extends State<ScreenRoom> {
     switch (modelMeetingRoom.roomNum) {
       case 1:
         webRoomNum = 3;
+
         break;
       case 2:
         webRoomNum = -1;
+
         break;
       case 3:
         webRoomNum = 1;
+
         break;
       case 4:
         webRoomNum = 2;
+
     }
 
     if (webRoomNum == -1) {
+
       return new List<String>();
     }
 
     String rawHtml;
-    rawHtml = await serviceCookieRequest.get(
+    rawHtml = await ServiceCookieRequest.get(
         'http://gw.hakjisa.co.kr/RsvObjMgr/RsvObj_List?Arrow=&CrdNo=&SelDate=&ViewDate=&ViewSeq=&cmbCateNo=0&iYear=2021&iWeek=${currentWeekNum.toString()}&SearchTxt=');
 
     var parsedHtml = parse(rawHtml);
@@ -404,7 +495,9 @@ class _ScreenRoomState extends State<ScreenRoom> {
     String sCurrentReserves =
         tableArea.children[webRoomNum].children[currentWeek].text;
 
-    return sCurrentReserves.split('[승인]');
+      return sCurrentReserves.split('[승인]');
+
+
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -419,7 +512,7 @@ class _ScreenRoomState extends State<ScreenRoom> {
       setState(() {
         // we format the selected date and assign it to the state variable
         selectedDate = d;
-        forceRebuild = ValueKey(DateTime.now()); //위젯 강제 새로고침
+        gioRebuild = ValueKey(DateTime.now()); //위젯 강제 새로고침
       });
   }
 
@@ -445,6 +538,15 @@ class _ScreenRoomState extends State<ScreenRoom> {
       ),
     );
   }
+
+
+    void _openZioyouReservePage() async {
+      String url = 'http://m.hakjisa.co.kr/zioyou.reservation/';
+      if(await canLaunch(url)) await launch(url);
+      else throw 'Could not Launch '+url;
+
+    }
+
 
   //////////////////////////한동안 지유오쪽 서버의 데이터를 띄우도록 하기 때문에 사용x
 
@@ -515,6 +617,7 @@ class _ScreenRoomState extends State<ScreenRoom> {
     // TODO: implement dispose
 
     Navigator.pop(context, 'roomfinish');
+    _timer.cancel();
     super.dispose();
   }
 }

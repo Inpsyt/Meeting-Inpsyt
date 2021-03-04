@@ -3,13 +3,13 @@ import 'package:http/http.dart'as http;
 
 class ServiceCookieRequest{
 
-  final JsonDecoder _decoder = new JsonDecoder();
-  final JsonEncoder _encoder = new JsonEncoder();
+  static final JsonDecoder _decoder = new JsonDecoder();
+  static final JsonEncoder _encoder = new JsonEncoder();
 
-  Map<String, String> headers = {"content-type": "text/json"};
-  Map<String, String> cookies = {};
+  static Map<String, String> headers = {"content-type": "text/json"};
+  static Map<String, String> cookies = {};
 
-  void _updateCookie(http.Response response) {
+  static void _updateCookie(http.Response response) {
     String allSetCookie = response.headers['set-cookie'];
 
     if (allSetCookie != null) {
@@ -28,7 +28,7 @@ class ServiceCookieRequest{
     }
   }
 
-  void _setCookie(String rawCookie) {
+  static void _setCookie(String rawCookie) {
     if (rawCookie.length > 0) {
       var keyValue = rawCookie.split('=');
       if (keyValue.length == 2) {
@@ -39,12 +39,12 @@ class ServiceCookieRequest{
         if (key == 'path' || key == 'expires')
           return;
 
-        this.cookies[key] = value;
+        cookies[key] = value;
       }
     }
   }
 
-  String _generateCookieHeader() {
+  static String _generateCookieHeader() {
     String cookie = "";
 
     for (var key in cookies.keys) {
@@ -56,7 +56,7 @@ class ServiceCookieRequest{
     return cookie;
   }
 
-  Future<dynamic> get(String url) {
+  static Future<dynamic> get(String url) {
     return http.get(url, headers: headers).then((http.Response response) {
       final String res = response.body;
       final int statusCode = response.statusCode;
@@ -67,7 +67,9 @@ class ServiceCookieRequest{
         throw new Exception("Error while fetching data : ${statusCode}");
       }
 
-      //print(res);
+
+      print('ServiceCookieRequest : '+response.statusCode.toString());
+      print('ServiceCookieRequest : '+res);
 
       return res;
 
@@ -76,7 +78,7 @@ class ServiceCookieRequest{
 
   }
 
-  Future<dynamic> post(String url, {body, encoding}) {
+  static Future<dynamic> post(String url, {body, encoding}) {
     return http
         .post(url, body: _encoder.convert(body), headers: headers, encoding: encoding)
         .then((http.Response response) {
@@ -90,5 +92,11 @@ class ServiceCookieRequest{
       }
       return _decoder.convert(res);
     });
+  }
+
+
+  static Future loginGroupWare() async {
+    await ServiceCookieRequest.get(
+        'http://gw.hakjisa.co.kr/LoginOK?CorpID=xxxxxxxxxx&UserID=kakao%40hakjisa.co.kr&UserPass=gkrwltk741%21%40&UserOTP=');
   }
 }
