@@ -126,7 +126,7 @@ class _ScreenRoomState extends State<ScreenRoom> {
                   textAlign: TextAlign.center,
                   style: TextStyle(
                       color: modelMeetingRoom.isUsing ? color_dark : color_dark,
-                      fontSize: 35,
+                      fontSize: 30,
                       fontWeight: FontWeight.bold),
                 ),
 
@@ -159,7 +159,7 @@ class _ScreenRoomState extends State<ScreenRoom> {
                               ),
                               color_gradientBlueStart,
                               color_gradientBlueEnd,
-                              70,
+                              80,
                               deviceWidth / 1.3,
                               10, () {
                             _navigateTimeSelect(context, modelMeetingRoom);

@@ -28,7 +28,6 @@ import 'package:qrscan/qrscan.dart' as scanner;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:http/http.dart' as http;
 
-
 class ScreenMeetingRooms extends StatefulWidget {
   @override
   _ScreenMeetingRoomsState createState() => _ScreenMeetingRoomsState();
@@ -37,8 +36,7 @@ class ScreenMeetingRooms extends StatefulWidget {
 class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
   final Firestore db = Firestore.instance; //cfs
 
-  final String sCurrentAppVersion = '0.0.8';
-
+  final String sCurrentAppVersion = '0.0.6';
   Timer updateTimer;
   List<ModelMeetingRoom> roomList;
   SharedPreferences _preferences;
@@ -163,13 +161,10 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
     // TODO: implement initState
     super.initState();
 
-
     SchedulerBinding.instance.addPostFrameCallback((_) => _checkAppUpdate());
-
 
     ServiceCookieRequest.loginGroupWare();
     _getCheckUserNumPref();
-
 
     initConnectivity();
     _connectionSub =
@@ -216,7 +211,6 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
 
     //_nfcReaderSet();
 
-
     return Scaffold(
         floatingActionButton: DiamondNotchedFab(
           onPressed: () {
@@ -256,22 +250,37 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
                     left: 15,
                   ),
 
-                  /*
-                //설정버튼
-                Positioned(
-                  child: GestureDetector(
-                    child: Icon(
-                      Icons.settings,
-                      color: color_white,
+                  //설정버튼
+                  Positioned(
+                    child: GestureDetector(
+                      child: Icon(
+                        Icons.info_outline,
+                        color: color_white,
+                      ),
+                      onTap: () {
+                        showDialog(
+                            context: context,
+                            builder: (context) {
+                              return AlertDialog(
+                                title: Text('앱 정보'),
+                                content: Text('사용자 : ' +
+                                    _userNum.toString() +
+                                    '\n앱 버전 : ' +
+                                    sCurrentAppVersion),
+                                actions: [
+                                  FlatButton(
+                                      onPressed: () {
+                                        Navigator.pop(context, false);
+                                      },
+                                      child: Text('OK'))
+                                ],
+                              );
+                            });
+                      },
                     ),
-                    onTap: () {
-                     _navigatePreferences();
-                    },
-                  ),
-                  right: 14,
-                  bottom: 22,
-                )
-                 */
+                    right: 14,
+                    bottom: 22,
+                  )
 
                   /* //사용자번호 확인용
                 Positioned(
@@ -431,7 +440,6 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
   }
 
   _entryRoom(ModelMeetingRoom room) async {
-
     _nowInRoom = true;
     if (_userNum == '') return; //번호 입력 안하고 백키 누를 경우를 대비해 그냥 실행 방지
     if (room.isUsing &&
@@ -472,12 +480,12 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
   }
 
   Future _checkAppUpdate() async {
-
-    var rawDoc = await http.get('http://jwk9022648.github.io/inpsyt_qr_website/appconfig');
+    var rawDoc = await http
+        .get('http://jwk9022648.github.io/inpsyt_qr_website/appconfig');
     var elements = parse(rawDoc.body);
 
     //앱 버전이 서버 기준과 동일할 시 업데이트 표시 안함
-    if(sCurrentAppVersion == elements.children[0].text.trim()){
+    if (sCurrentAppVersion == elements.children[0].text.trim()) {
       return;
     }
 
@@ -489,7 +497,6 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
             title: Text('업데이트 확인됨'),
             content: Text('새 버전이 확인 되었습니다. \n업데이트를 진행해주세요.'),
             actions: [
-
               FlatButton(
                 child: Text('나중에'),
                 onPressed: () {
@@ -497,7 +504,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
                 },
               ),
               FlatButton(
-                child: Text('업데이트',style: TextStyle(color: Colors.green)),
+                child: Text('업데이트', style: TextStyle(color: Colors.green)),
                 onPressed: () {
                   StoreLauncher.openWithStore("com.kkumsoft.inpsyt_meeting");
                 },

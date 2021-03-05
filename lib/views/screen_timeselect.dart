@@ -150,7 +150,7 @@ class _ScreenTimeSelectState extends State<ScreenTimeSelect> {
                       fontSize: 25,
                       fontWeight: FontWeight.bold),
                 ),
-                _timeButton('2분'),
+                _timeButton('30분'),
                 _timeButton('60분'),
                 _timeButton('90분'),
                 _timeButton('120분'),
@@ -216,9 +216,9 @@ class _ScreenTimeSelectState extends State<ScreenTimeSelect> {
           curTime.year,
           curTime.month,
           curTime.day,
-          21,
-          0,
-          0,
+          23,
+          59,
+          59,
           0,
           0));
     }
