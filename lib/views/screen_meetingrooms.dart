@@ -443,7 +443,7 @@ class _ScreenMeetingRoomsState extends State<ScreenMeetingRooms> {
     _nowInRoom = true;
     if (_userNum == '') return; //번호 입력 안하고 백키 누를 경우를 대비해 그냥 실행 방지
     if (room.isUsing &&
-        (room.userNum.trim() == _userNum || _userNum == '현장기기')) {
+        (room.userNum.trim() == _userNum || _userNum.substring(0,3) == '공용폰')) {
       await Navigator.of(context).push(
         MaterialPageRoute(
             builder: (BuildContext context) =>
