@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>895772697814-hfs9k8tas64ni51mtjim87i7102aa9bt.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.895772697814-hfs9k8tas64ni51mtjim87i7102aa9bt</string>
+	<key>API_KEY</key>
+	<string>AIzaSyDHgIPSJZEzajYrnOEfQ2EzpP92hvzZKsI</string>
+	<key>GCM_SENDER_ID</key>
+	<string>895772697814</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.kkumsoft.inpsytMeeting</string>
+	<key>PROJECT_ID</key>
+	<string>inpsyt-meeting</string>
+	<key>STORAGE_BUCKET</key>
+	<string>inpsyt-meeting.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:895772697814:ios:ae9bfd6a937aaa61d65577</string>
+</dict>
+</plist>
