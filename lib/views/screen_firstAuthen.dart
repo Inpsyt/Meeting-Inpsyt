@@ -1,7 +1,9 @@
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:inpsyt_meeting/constants/const_colors.dart';
+import 'package:inpsyt_meeting/services/service_cookierequest.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ScreenFistAuthen extends StatefulWidget {
@@ -10,24 +12,22 @@ class ScreenFistAuthen extends StatefulWidget {
 }
 
 class _ScreenFistAuthenState extends State<ScreenFistAuthen> {
-
-
   String userNum = '';
+  String userPW = '';
   SharedPreferences _preferences;
-  final  controller =TextEditingController();
+  final emailController = TextEditingController();
+  final pwController = TextEditingController();
 
+  bool isLoginProgress = false;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     _getPref();
-
-
-
   }
 
-  _getPref() async{
+  _getPref() async {
     _preferences = await SharedPreferences.getInstance();
     /*
     setState(() {
@@ -36,35 +36,43 @@ class _ScreenFistAuthenState extends State<ScreenFistAuthen> {
       print('usernum='+userNum);
     });
      */
-
   }
 
   _loadUserPref() {
-    userNum = (_preferences.getString('userNum')??'12');
-    controller.text = userNum;
-    print('usernum='+userNum);
+    userNum = (_preferences.getString('userNum') ?? '12');
+    emailController.text = userNum;
+    print('usernum=' + userNum);
   }
 
+  _checkAccount(BuildContext buildContext) async{
+    setState(() {
+      isLoginProgress = true;
+    });
 
 
-  _saveUserPref() async {
 
-    userNum = controller.text.trim();
-    if(userNum.length<4){
+    bool result = await ServiceCookieRequest.loginGroupWare();
 
-      return;
+    if(result == true){
+      Navigator.pop(buildContext, 'authenticated');
+    }else{
+      setState(() {
+        isLoginProgress = false;
+      });
     }
 
-      _preferences.setString('userNum', userNum);
-      _loadUserPref();
-
   }
 
+  _saveUserPref() async {
+    userNum = emailController.text.trim();
+    userPW = pwController.text.trim();
+    _preferences.setString('userNum', userNum);
+    _preferences.setString('userPW', userPW);
+    _loadUserPref();
+  }
 
   @override
   Widget build(BuildContext context) {
-
-
     return Scaffold(
       body: Container(
         padding: EdgeInsets.symmetric(vertical: 100),
@@ -74,45 +82,70 @@ class _ScreenFistAuthenState extends State<ScreenFistAuthen> {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             Text(
-              '전화번호 마지막 4자리를 입력해 주세요!',
-              style: TextStyle(fontSize: 18),
+              '지오유 계정을 입력해주세요\n회의목록 열람 목적 외에는 절대 사용하지 않습니다.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 16),
             ),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 100),
-              child: TextField(
-                controller: controller,
-                maxLength: 4,
-                keyboardType: TextInputType.number,
-                decoration: new InputDecoration(
-                    border: new OutlineInputBorder(
-                        borderSide: new BorderSide(color: Colors.teal)),
-                    hintText: 'ex)4827',
-                    labelText: '전화번호 마지막 4자리',
-                    prefixIcon: const Icon(
-                      Icons.phone,
-                      color: Colors.blueAccent,
-                    ),
-                    prefixText: ' ',
-                    suffixStyle: const TextStyle(color: Colors.green)),
-              ),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 80),
+                  child: TextField(
+                    controller: emailController,
+                    decoration: new InputDecoration(
+                        border: new OutlineInputBorder(
+                            borderSide: new BorderSide(color: Colors.teal)),
+                        hintText: 'ex)dev@inpsyt.co.kr',
+                        labelText: '지오유 Email',
+                        prefixIcon: const Icon(
+                          Icons.alternate_email,
+                          color: Colors.blueAccent,
+                        ),
+                        prefixText: ' ',
+                        suffixStyle: const TextStyle(color: Colors.green)),
+                  ),
+                ),
+                SizedBox(height: 10,),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 80),
+                  child: TextField(
+                    controller: pwController,
+                    decoration: new InputDecoration(
+                        border: new OutlineInputBorder(
+                            borderSide: new BorderSide(color: Colors.teal)),
+                        labelText: '지오유 PW',
+                        prefixIcon: const Icon(
+                          Icons.vpn_key,
+                          color: Colors.blueAccent,
+                        ),
+                        prefixText: ' ',
+                        suffixStyle: const TextStyle(color: Colors.green)),
+                  ),
+                ),
+                SizedBox(height: 10,),
+                Text('로그인 실패 (계정을 다시 확인해 주세요)',style: TextStyle(color: Colors.red),),
+              ],
             ),
-            RaisedButton(
+
+
+            isLoginProgress?CircularProgressIndicator():RaisedButton(
               onPressed: () {
                 _saveUserPref();
-                Navigator.pop(context,'authenticated');
+                _checkAccount(context);
+
 
                 //_loadUserPref();
-
               },
               color: color_skyBlue,
               child: Padding(
                   padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
                   child: Text(
-                    '확인',
+                    'LOGIN',
                     style: TextStyle(
                         fontSize: 23,
-                        color: color_dark,
-                        fontWeight: FontWeight.bold),
+                        color: color_white,
+                        fontWeight: FontWeight.normal),
                   )),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(7),

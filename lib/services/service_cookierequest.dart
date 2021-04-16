@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart'as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ServiceCookieRequest{
 
@@ -95,8 +96,22 @@ class ServiceCookieRequest{
   }
 
 
-  static Future loginGroupWare() async {
-    await ServiceCookieRequest.get(
-        'http://gw.hakjisa.co.kr/LoginOK?CorpID=xxxxxxxxxx&UserID=kakao%40hakjisa.co.kr&UserPass=gkrwltk741%21%40&UserOTP=');
+  static Future<bool> loginGroupWare() async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+
+    String userID = preferences.getString('userNum');
+    String userPW = preferences.getString('userPW');
+
+    var result = await get(
+        //'http://gw.hakjisa.co.kr/LoginOK?CorpID=xxxxxxxxxx&UserID=kakao%40hakjisa.co.kr&UserPass=gkrwltk741%21%40&UserOTP='
+        'http://gw.hakjisa.co.kr/LoginOK?CorpID=xxxxxxxxxx&UserID=${userID}%40hakjisa.co.kr&UserPass=${userPW}&UserOTP='
+    );
+
+
+
+    return cookies['UserID'] == null ? false: true;
+
   }
+
+
 }
